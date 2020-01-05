@@ -45,6 +45,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun validateUser(uuid: String): Boolean = withContext(dispatcher) {
         transaction {
             Users
+                .slice(Users.uuid)
                 .select { Users.uuid eq uuid }
                 .limit(1)
                 .count() != 0
@@ -55,6 +56,7 @@ internal class DatabaseModule(application: Application) {
         withContext(dispatcher) {
             transaction {
                 val count = Users
+                    .slice(Users.uuid)
                     .select { Users.uuid eq uuid }
                     .count()
                 if (count == 0) {
@@ -70,7 +72,7 @@ internal class DatabaseModule(application: Application) {
 
     suspend fun usersCount(): Int = withContext(dispatcher) {
         transaction {
-            Users.selectAll().count()
+            Users.slice().selectAll().count()
         }
     }
 
@@ -87,6 +89,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun createFavorite(uuid: String, sessionId: String) = withContext(dispatcher) {
         transaction {
             val count = Favorites
+                .slice(Favorites.uuid, Favorites.sessionId)
                 .select { (Favorites.uuid eq uuid) and (Favorites.sessionId eq sessionId) }
                 .count()
 
@@ -103,6 +106,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun getFavorites(userId: String): List<String> = withContext(dispatcher) {
         transaction {
             Favorites
+                .slice(Favorites.sessionId)
                 .select { Favorites.uuid eq userId }
                 .map { it[Favorites.sessionId] }
         }
@@ -111,6 +115,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun getAllFavorites(): List<String> = withContext(dispatcher) {
         transaction {
             Favorites
+                .slice(Favorites.sessionId)
                 .selectAll()
                 .map { it[Favorites.sessionId] }
         }
@@ -119,6 +124,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun getVotes(uuid: String): List<VoteData> = withContext(dispatcher) {
         transaction {
             Votes
+                .slice(Votes.sessionId, Votes.rating)
                 .select { Votes.uuid eq uuid }
                 .map {
                     VoteData(
@@ -132,6 +138,7 @@ internal class DatabaseModule(application: Application) {
     suspend fun getAllVotes(): List<VoteData> = withContext(dispatcher) {
         transaction {
             Votes
+                .slice(Votes.sessionId, Votes.rating)
                 .selectAll()
                 .map {
                     VoteData(
@@ -151,8 +158,10 @@ internal class DatabaseModule(application: Application) {
         withContext(dispatcher) {
             transaction {
                 val count = Votes
+                    .slice(Votes.uuid, Votes.sessionId)
                     .select { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
                     .count()
+
                 if (count == 0) {
                     Votes.insert {
                         it[Votes.uuid] = uuid
