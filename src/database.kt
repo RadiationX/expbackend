@@ -6,7 +6,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import org.jetbrains.squash.connection.*
 import org.jetbrains.squash.definition.*
-import org.jetbrains.squash.dialects.h2.*
+import org.jetbrains.squash.dialects.mysql.MySqlConnection
 import org.jetbrains.squash.expressions.*
 import org.jetbrains.squash.query.*
 import org.jetbrains.squash.results.*
@@ -23,6 +23,8 @@ internal class Database(application: Application) {
     init {
         val appConfig = application.environment.config.config("database")
         val url = appConfig.property("connection").getString()
+        val user = appConfig.property("user").getString()
+        val pass = appConfig.property("pass").getString()
         val poolSize = appConfig.property("poolSize").getString().toInt()
         application.log.info("Connecting to database at '$url'")
 
@@ -31,12 +33,14 @@ internal class Database(application: Application) {
         val hikariConfig = HikariConfig().apply {
             jdbcUrl = url
             maximumPoolSize = poolSize
+            username = user
+            password = pass
             validate()
         }
 
         connectionPool = HikariDataSource(hikariConfig)
 
-        connection = H2Connection { connectionPool.connection }
+        connection = MySqlConnection { connectionPool.connection }
         connection.transaction {
             databaseSchema().create(listOf(Users, Favorites, Votes))
         }

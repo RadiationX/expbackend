@@ -1,0 +1,59 @@
+# Версия docker-compose
+version: '3'
+
+# Список наших сервисов (контейнеров)
+services:
+
+#  ktor-web-app:
+#    restart: always
+#    container_name: ktor-web-app
+#    build:
+#      dockerfile: Dockerfile
+#      context: ./backend
+#    environment:
+#      - VIRTUAL_HOST=anilibria.io
+#      - LETSENCRYPT_HOST=anilibria.io
+#    ports:
+#      - 4060:4060
+#    expose:
+#      - 4060
+#    networks:
+#      - app-network
+#    volumes:
+#      - ./data/app:/app/ktorlog
+
+#  nginx:
+#    # используем последний стабильный образ nginx
+#    image: nginx:1.15
+#    restart: unless-stopped
+#    # маршрутизируем порты
+#    ports:
+#      - 80:80
+#      #- 443:443
+#    # монтируем директории, слева директории на основной машине, справа - куда они монтируются в контейнере
+#    volumes:
+#      - ./services/nginx:/etc/nginx/conf.d
+#      - ./www:/var/www
+#      - ./data/nginx:/var/log/nginx
+#    depends_on:
+#      - ktor-web-app
+#    networks:
+#      - app-network
+
+  mariadb:
+    image: mariadb:10.3
+    restart: unless-stopped
+    ports:
+      - 3308:3306
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+      - ./www/sql/main.sql:/docker-entrypoint-initdb.d/01-main.sql
+    environment:
+      - MYSQL_USER=mysqlusr
+      - MYSQL_PASSWORD=mysqlpwd
+      - MYSQL_ROOT_PASSWORD=mysqlrootpwd
+      - MYSQL_DATABASE=mysqldb
+
+networks:
+  app-network:
+    driver: bridge
