@@ -89,7 +89,7 @@ internal fun Application.main() {
         listOf(HttpMethod.Put, HttpMethod.Delete, HttpMethod.Options).forEach { method(it) }
     }
 
-    val database = Database(this)
+    val database = DatabaseModule(this)
     install(Routing) {
         authenticate()
         static {

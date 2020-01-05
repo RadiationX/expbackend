@@ -3,22 +3,17 @@ package ru.radiationx
 import com.zaxxer.hikari.*
 import io.ktor.application.*
 import kotlinx.coroutines.*
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.coroutines.*
-import org.jetbrains.squash.connection.*
-import org.jetbrains.squash.definition.*
-import org.jetbrains.squash.dialects.mysql.MySqlConnection
-import org.jetbrains.squash.expressions.*
-import org.jetbrains.squash.query.*
-import org.jetbrains.squash.results.*
-import org.jetbrains.squash.statements.*
 import ru.radiationx.common.RatingData
 import ru.radiationx.common.VoteData
 import java.time.*
 
-internal class Database(application: Application) {
+internal class DatabaseModule(application: Application) {
     private val dispatcher: CoroutineContext
     private val connectionPool: HikariDataSource
-    private val connection: DatabaseConnection
+    private val connection: Database
 
     init {
         val appConfig = application.environment.config.config("database")
@@ -40,90 +35,110 @@ internal class Database(application: Application) {
 
         connectionPool = HikariDataSource(hikariConfig)
 
-        connection = MySqlConnection { connectionPool.connection }
-        connection.transaction {
-            databaseSchema().create(listOf(Users, Favorites, Votes))
+        connection = Database.connect(connectionPool)
+
+        transaction {
+            SchemaUtils.create(Users, Favorites, Votes)
         }
     }
 
     suspend fun validateUser(uuid: String): Boolean = withContext(dispatcher) {
-        connection.transaction {
-            Users.select { Users.id.count() }
-                .where { Users.uuid eq uuid }
-                .execute().single().get<Int>(0) != 0
+        transaction {
+            Users
+                .select { Users.uuid eq uuid }
+                .limit(1)
+                .count() != 0
         }
     }
 
     suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean =
         withContext(dispatcher) {
-            connection.transaction {
-                val count = Users.select { Users.id.count() }.where { Users.uuid eq uuid }.execute()
-                    .single().get<Int>(0)
+            transaction {
+                val count = Users
+                    .select { Users.uuid eq uuid }
+                    .count()
                 if (count == 0) {
-                    insertInto(Users).values {
+                    Users.insert {
                         it[Users.uuid] = uuid
                         it[Users.timestamp] = timestamp.toString()
                         it[Users.remote] = remote
-                    }.execute()
+                    }
                 }
                 count == 0
             }
         }
 
     suspend fun usersCount(): Int = withContext(dispatcher) {
-        connection.transaction {
-            Users.select { Users.id.count() }.execute().single().get<Int>(0)
+        transaction {
+            Users.selectAll().count()
         }
     }
 
     suspend fun deleteFavorite(uuid: String, sessionId: String): Unit = withContext(dispatcher) {
-        connection.transaction {
-            deleteFrom(Favorites)
-                .where { (Favorites.uuid eq uuid) and (Favorites.sessionId eq sessionId) }
-                .execute()
+        transaction {
+            Favorites
+                .deleteWhere {
+                    (Favorites.uuid eq uuid) and (Favorites.sessionId eq sessionId)
+                }
+            Unit
         }
     }
 
     suspend fun createFavorite(uuid: String, sessionId: String) = withContext(dispatcher) {
-        connection.transaction {
-            val count = Favorites.select { Favorites.id.count() }
-                .where { (Favorites.uuid eq uuid) and (Favorites.sessionId eq sessionId) }
-                .execute().single().get<Int>(0)
+        transaction {
+            val count = Favorites
+                .select { (Favorites.uuid eq uuid) and (Favorites.sessionId eq sessionId) }
+                .count()
+
             if (count == 0) {
-                insertInto(Favorites).values {
+                Favorites.insert {
                     it[Favorites.uuid] = uuid
                     it[Favorites.sessionId] = sessionId
-                }.execute()
+                }
             }
             count == 0
         }
     }
 
     suspend fun getFavorites(userId: String): List<String> = withContext(dispatcher) {
-        connection.transaction {
-            Favorites.select(Favorites.sessionId)
-                .where { Favorites.uuid eq userId }
-                .execute().map { it.get<String>(0) }.toList()
+        transaction {
+            Favorites
+                .select { Favorites.uuid eq userId }
+                .map { it[Favorites.sessionId] }
         }
     }
 
     suspend fun getAllFavorites(): List<String> = withContext(dispatcher) {
-        connection.transaction {
-            Favorites.select(Favorites.sessionId).execute().map { it.get<String>(0) }.toList()
+        transaction {
+            Favorites
+                .selectAll()
+                .map { it[Favorites.sessionId] }
         }
     }
 
     suspend fun getVotes(uuid: String): List<VoteData> = withContext(dispatcher) {
-        connection.transaction {
-            Votes.select(Votes.sessionId, Votes.rating).where { Votes.uuid eq uuid }
-                .execute().map { VoteData(sessionId = it[0], rating = RatingData(it[1])) }.toList()
+        transaction {
+            Votes
+                .select { Votes.uuid eq uuid }
+                .map {
+                    VoteData(
+                        sessionId = it[Votes.sessionId],
+                        rating = RatingData(it[Votes.rating])
+                    )
+                }
         }
     }
 
     suspend fun getAllVotes(): List<VoteData> = withContext(dispatcher) {
-        connection.transaction {
-            Votes.select(Votes.sessionId, Votes.rating).execute()
-                .map { VoteData(it[0], RatingData(it[1])) }.toList()
+        transaction {
+            Votes
+                .selectAll()
+                .map {
+                    VoteData(
+                        sessionId = it[Votes.sessionId],
+                        rating = RatingData(it[Votes.rating])
+                    )
+                }
         }
     }
 
@@ -134,51 +149,49 @@ internal class Database(application: Application) {
         timestamp: LocalDateTime
     ): Boolean =
         withContext(dispatcher) {
-            connection.transaction {
-                val count = Votes.select { Votes.id.count() }
-                    .where { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
-                    .execute().single().get<Int>(0)
+            transaction {
+                val count = Votes
+                    .select { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
+                    .count()
                 if (count == 0) {
-                    insertInto(Votes).values {
+                    Votes.insert {
                         it[Votes.uuid] = uuid
                         it[Votes.sessionId] = sessionId
                         it[Votes.rating] = rating
                         it[Votes.timestamp] = timestamp.toString()
-                    }.execute()
+                    }
                     true
                 } else {
-                    update(Votes).where { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
-                        .set {
-                            it[Votes.rating] = rating
-                        }.execute()
+                    Votes.update({ (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }) {
+                        it[Votes.rating] = rating
+                    }
                     false
                 }
             }
         }
 
     suspend fun deleteVote(uuid: String, sessionId: String): Unit = withContext(dispatcher) {
-        connection.transaction {
-            deleteFrom(Votes)
-                .where { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
-                .execute()
-
+        transaction {
+            Votes.deleteWhere { (Votes.uuid eq uuid) and (Votes.sessionId eq sessionId) }
+            Unit
         }
     }
 
     suspend fun getVotesSummary(sessionId: String): Map<String, Int> = withContext(dispatcher) {
-        connection.transaction {
-            val votes = Votes.select(Votes.rating).select { Votes.id.count() }
-                .where { Votes.sessionId eq sessionId }
+        transaction {
+            val votes = Votes
+                .slice(Votes.rating, Votes.id.count())
+                .select { Votes.sessionId eq sessionId }
                 .groupBy(Votes.rating)
-                .execute()
+
             val map = votes.associateTo(mutableMapOf()) {
-                val rating = when (it.get<Int>(0)) {
+                val rating = when (it[Votes.rating]) {
                     0 -> "soso"
                     1 -> "good"
                     -1 -> "bad"
                     else -> "unknown"
                 }
-                val count = it.get<Int>(1)
+                val count = it[Votes.id.count()]
                 rating to count
             }
             if ("bad" !in map) map["bad"] = 0
@@ -189,23 +202,29 @@ internal class Database(application: Application) {
     }
 }
 
-internal object Users : TableDefinition() {
-    val id = integer("id").autoIncrement().primaryKey()
+internal object Users : Table() {
+    val id = integer("id").autoIncrement()
     val uuid = varchar("uuid", 50).index()
     val remote = varchar("remote", 50)
     val timestamp = varchar("timestamp", 50)
+
+    override val primaryKey: PrimaryKey = PrimaryKey(id)
 }
 
-internal object Favorites : TableDefinition() {
-    val id = integer("id").autoIncrement().primaryKey()
+internal object Favorites : Table() {
+    val id = integer("id").autoIncrement()
     val uuid = varchar("uuid", 50).index()
     val sessionId = varchar("sessionId", 50)
+
+    override val primaryKey: PrimaryKey = PrimaryKey(id)
 }
 
-internal object Votes : TableDefinition() {
-    val id = integer("id").autoIncrement().primaryKey()
+internal object Votes : Table() {
+    val id = integer("id").autoIncrement()
     val timestamp = varchar("timestamp", 50)
     val uuid = varchar("uuid", 50).index()
     val sessionId = varchar("sessionId", 50).index()
     val rating = integer("rating")
+
+    override val primaryKey: PrimaryKey = PrimaryKey(id)
 }
