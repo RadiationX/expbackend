@@ -1,12 +1,8 @@
-@file:UseSerializers(GMTDateSerializer::class)
-
 package ru.radiationx.common
 
+import com.google.gson.annotations.SerializedName
 import io.ktor.util.date.*
-import kotlinx.serialization.*
-import kotlinx.serialization.internal.*
 
-@Serializable
 class ConferenceData(
     val allData: SessionizeData = SessionizeData(),
     val favorites: List<String> = emptyList(),
@@ -15,7 +11,6 @@ class ConferenceData(
     val votesCountRequired: Int
 )
 
-@Serializable
 class SessionizeData(
     val sessions: List<SessionData> = emptyList(),
     val rooms: List<RoomData> = emptyList(),
@@ -25,14 +20,12 @@ class SessionizeData(
     val partners: List<PartnerData> = emptyList()
 )
 
-@Serializable
 data class SessionData(
     val id: String,
     val isServiceSession: Boolean,
     val isPlenumSession: Boolean,
     val speakers: List<String>,
-    @SerialName("description")
-    var descriptionText: String? = "",
+    @SerializedName("description") var descriptionText: String? = "",
     val startsAt: GMTDate,
     val endsAt: GMTDate,
     val title: String,
@@ -54,14 +47,12 @@ val SessionData.url: String
         append("$day-dec/$id")
     }
 
-@Serializable
 class RoomData(
     val name: String,
     val id: Int,
     val sort: Int
 )
 
-@Serializable
 class SpeakerData(
     val id: String,
     val firstName: String,
@@ -77,7 +68,6 @@ class SpeakerData(
     val questionAnswers: List<QuestionAnswerData> = emptyList()
 )
 
-@Serializable
 class QuestionData(
     val question: String,
     val id: Int,
@@ -85,7 +75,6 @@ class QuestionData(
     val questionType: String
 )
 
-@Serializable
 class CategoryData(
     val id: Int,
     val sort: Int,
@@ -93,46 +82,39 @@ class CategoryData(
     val items: List<CategoryItemData> = emptyList()
 )
 
-@Serializable
 class VoteData(
     val sessionId: String,
     val rating: RatingData? = null
 )
 
-@Serializable
 class QuestionAnswerData(
     val questionId: Int,
     val answerValue: String
 )
 
-@Serializable
 class LinkData(
     val linkType: String,
     val title: String,
     val url: String
 )
 
-@Serializable
 class CategoryItemData(
     val name: String,
     val id: Int,
     val sort: Int
 )
 
-@Serializable
 class PartnerData(
     val name: String,
     val logo: String,
     val description: String
 )
 
-@Serializable
 class LiveVideo(val room: Int, val videoId: String)
 
 /**
  * TODO: remove when serialization supports typeOf<EnumClass>()
  */
-@Serializable
 data class RatingData(val value: Int) {
     companion object {
         val BAD = RatingData(-1)

@@ -1,15 +1,30 @@
 package ru.radiationx
 
+import com.google.gson.reflect.TypeToken
 import io.ktor.application.*
-import io.ktor.auth.*
+import io.ktor.auth.Principal
+import io.ktor.auth.authentication
 import io.ktor.features.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.serialization.*
-import io.ktor.util.*
+import io.ktor.gson.gson
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.default
+import io.ktor.http.content.files
+import io.ktor.http.content.static
+import io.ktor.request.header
+import io.ktor.response.header
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.Routing
+import io.ktor.util.date.GMTDate
+import io.ktor.util.error
+import ru.radiationx.base.BaseError
+import ru.radiationx.base.BaseErrorContainer
+import ru.radiationx.base.BaseResponse
+import ru.radiationx.common.GMTDateSerializer
+import java.lang.reflect.Type
+
 
 internal fun Application.main() {
     val config = environment.config
@@ -34,29 +49,37 @@ internal fun Application.main() {
     install(AutoHeadResponse)
     install(XForwardedHeaderSupport)
     install(StatusPages) {
-        exception<ServiceUnavailable> { _ ->
-            call.respond(HttpStatusCode.ServiceUnavailable)
+        exception<ServiceUnavailable> { cause ->
+            call.respond(withErrorCode(cause), wrapError(cause))
         }
-        exception<BadRequest> { _ ->
-            call.respond(HttpStatusCode.BadRequest)
+        exception<BadRequest> { cause ->
+            call.respond(withErrorCode(cause), wrapError(cause))
         }
-        exception<Unauthorized> { _ ->
-            call.respond(HttpStatusCode.Unauthorized)
+        exception<Unauthorized> { cause ->
+            call.respond(withErrorCode(cause), wrapError(cause))
         }
-        exception<NotFound> { _ ->
-            call.respond(HttpStatusCode.NotFound)
+        exception<NotFound> { cause ->
+            call.respond(withErrorCode(cause), wrapError(cause))
         }
-        exception<SecretInvalidError> { _ ->
-            call.respond(HttpStatusCode.Forbidden)
+        exception<SecretInvalidError> { cause ->
+            call.respond(withErrorCode(cause), wrapError(cause))
+        }
+        status(HttpStatusCode.NotFound) {
+            call.respond(HttpStatusCode.NotFound, wrapError(NotFound()))
         }
         exception<Throwable> { cause ->
             environment.log.error(cause)
-            call.respond(HttpStatusCode.InternalServerError, cause.message.orEmpty())
+            call.respond(withErrorCode(cause), wrapError(cause))
         }
     }
 
     install(ContentNegotiation) {
-        serialization()
+        gson {
+            val listType: Type = object : TypeToken<GMTDate>() {}.type
+            registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
+            serializeNulls()
+            //registerTypeHierarchyAdapter(GMTDate::class.java, GMTDateSerializer)
+        }
     }
 
     install(CORS) {
@@ -77,6 +100,10 @@ internal fun Application.main() {
         api(database, sessionizeUrl, oldSessionizeUrl, adminSecret)
     }
 
+    intercept(ApplicationCallPipeline.Features) {
+        //throw Exception("Intercepted")
+        call.response.header("kekkeke", call.response.status()?.description ?: "watafak")
+    }
     launchSyncJob(sessionizeUrl, oldSessionizeUrl, sessionizeInterval)
 }
 
@@ -91,3 +118,23 @@ private fun Route.authenticate() {
 }
 
 internal class KotlinConfPrincipal(val token: String) : Principal
+
+private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
+    is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable
+    is BadRequest -> HttpStatusCode.BadRequest
+    is Unauthorized -> HttpStatusCode.Unauthorized
+    is NotFound -> HttpStatusCode.NotFound
+    is SecretInvalidError -> HttpStatusCode.Forbidden
+    else -> HttpStatusCode.InternalServerError
+}
+
+private fun wrapError(throwable: Throwable): BaseResponse =
+    BaseResponse(
+        BaseErrorContainer(
+            listOf(
+                BaseError(
+                    throwable.message ?: "No specific message for ${throwable.javaClass.simpleName}"
+                )
+            )
+        )
+    )

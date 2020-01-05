@@ -8,6 +8,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.date.*
+import ru.radiationx.base.BaseDataResponse
+import ru.radiationx.base.respondBase
 import ru.radiationx.common.ConferenceData
 import ru.radiationx.common.VoteData
 import java.time.*
@@ -40,12 +42,13 @@ private fun Routing.apiUsers(database: Database) {
             val timestamp = LocalDateTime.now(Clock.systemUTC())
             val created = database.createUser(userUUID, ip, timestamp)
             if (created)
-                call.respond(HttpStatusCode.Created)
+                call.respondBase(HttpStatusCode.Created)
             else
-                call.respond(HttpStatusCode.Conflict)
+                call.respondBase(HttpStatusCode.Conflict)
         }
         get("count") {
-            call.respondText(database.usersCount().toString())
+            call.respondBase(HttpStatusCode.Forbidden)
+            //call.respondBase(data = database.usersCount().toString())
         }
     }
 }
@@ -60,19 +63,19 @@ private fun Routing.apiFavorite(database: Database) {
         get {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
             val favorites = database.getFavorites(principal.token)
-            call.respond(favorites)
+            call.respondBase(data = favorites)
         }
         post {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
             val sessionId = call.receive<String>()
             database.createFavorite(principal.token, sessionId)
-            call.respond(HttpStatusCode.Created)
+            call.respondBase(HttpStatusCode.Created)
         }
         delete {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
             val sessionId = call.receive<String>()
             database.deleteFavorite(principal.token, sessionId)
-            call.respond(HttpStatusCode.OK)
+            call.respondBase(HttpStatusCode.OK)
         }
     }
 }
@@ -90,20 +93,20 @@ private fun Routing.apiVote(
         get {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
             val votes = database.getVotes(principal.token)
-            call.respond(votes)
+            call.respondBase(data = votes)
         }
         get("all") {
             call.validateSecret(adminSecret)
 
             val votes = database.getAllVotes()
-            call.respond(votes)
+            call.respondBase(data = votes)
         }
         get("summary/{sessionId}") {
             call.validateSecret(adminSecret)
 
             val id = call.parameters["sessionId"] ?: throw BadRequest()
             val votesSummary = database.getVotesSummary(id)
-            call.respond(votesSummary)
+            call.respondBase(data = votesSummary)
         }
         post {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
@@ -118,7 +121,7 @@ private fun Routing.apiVote(
             val votingPeriodStarted = nowTime >= startVotesAt
 
             if (!votingPeriodStarted) {
-                return@post call.respond(comeBackLater)
+                return@post call.respondBase(comeBackLater)
             }
 
             val timestamp = LocalDateTime.now(Clock.systemUTC())
@@ -128,20 +131,20 @@ private fun Routing.apiVote(
                 HttpStatusCode.OK
             }
 
-            call.respond(status)
+            call.respondBase(status)
         }
         post("required/{count}") {
             call.validateSecret(adminSecret)
             val count = call.parameters["count"] ?: throw BadRequest()
             votesRequired = count.toInt()
-            call.respond(HttpStatusCode.OK)
+            call.respondBase(HttpStatusCode.OK)
         }
         delete {
             val principal = call.validatePrincipal(database) ?: throw Unauthorized()
             val vote = call.receive<VoteData>()
             val sessionId = vote.sessionId
             database.deleteVote(principal.token, sessionId)
-            call.respond(HttpStatusCode.OK)
+            call.respondBase(HttpStatusCode.OK)
         }
     }
 }
@@ -176,19 +179,19 @@ private suspend fun respondAll(
         emptyList<VoteData>() to emptyList<String>()
     }
 
-    val responseData = ConferenceData(data, favorites, votes,  liveInfo(), votesRequired)
-    call.respond(responseData)
+    val responseData = ConferenceData(data, favorites, votes, liveInfo(), votesRequired)
+    call.respondBase(data = responseData)
 }
 
 private fun Routing.apiTwitter() {
     get("feed") {
-        call.respond(getFeedData())
+        call.respondBase(data = getFeedData())
     }
 }
 
 private fun Routing.apiTime(adminSecret: String) {
     get("time") {
-        call.respond(now().timestamp)
+        call.respondBase(data = now().timestamp)
     }
     post("time/{timestamp}") {
         call.validateSecret(adminSecret)
@@ -201,7 +204,7 @@ private fun Routing.apiTime(adminSecret: String) {
         }
 
         updateTime(time)
-        call.respond(HttpStatusCode.OK)
+        call.respondBase(HttpStatusCode.OK)
     }
 }
 
@@ -214,7 +217,7 @@ private fun Routing.apiLive(adminSecret: String) {
         val video = form["video"]
 
         addLive(room, video)
-        call.respond(HttpStatusCode.OK)
+        call.respondBase(HttpStatusCode.OK)
     }
 }
 
@@ -226,7 +229,7 @@ private fun Routing.apiSynchronize(sessionizeUrl: String, oldSessionizeUrl: Stri
         call.validateSecret(adminSecret)
 
         synchronizeWithSessionize(sessionizeUrl, oldSessionizeUrl)
-        call.respond(HttpStatusCode.OK)
+        call.respondBase(HttpStatusCode.OK)
     }
 }
 

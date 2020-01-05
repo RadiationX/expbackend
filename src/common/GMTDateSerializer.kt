@@ -1,18 +1,16 @@
 package ru.radiationx.common
 
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import io.ktor.util.date.*
-import kotlinx.serialization.*
-import kotlinx.serialization.internal.*
 
 /**
  * According to mask: "yyyy-MM-dd'T'HH:mm:ss"
  */
-@Serializer(forClass = GMTDate::class)
-internal object GMTDateSerializer : KSerializer<GMTDate> {
-    override val descriptor: SerialDescriptor =
-        StringDescriptor.withName("GMTDateDefaultSerializer")
+internal object GMTDateSerializer : TypeAdapter<GMTDate>() {
 
-    override fun serialize(encoder: Encoder, obj: GMTDate) {
+    override fun write(writer: JsonWriter, obj: GMTDate) {
         with(obj) {
             val monthPart = "${month.ordinal + 1}".padStart(2, '0')
             val dayString = dayOfMonth.toString(2)
@@ -21,12 +19,12 @@ internal object GMTDateSerializer : KSerializer<GMTDate> {
             val secondsString = seconds.toString(2)
 
             val value = "$year-$monthPart-${dayString}T$hoursString:$minutesString:$secondsString"
-            encoder.encodeString(value)
+            writer.value(value)
         }
     }
 
-    override fun deserialize(decoder: Decoder): GMTDate {
-        val value = decoder.decodeString()
+    override fun read(reader: JsonReader): GMTDate {
+        val value = reader.nextString()
         with(value) {
             val year = substring(0, 4).toInt()
             val month = substring(5, 7).toInt()
