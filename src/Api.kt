@@ -45,7 +45,6 @@ private fun Routing.apiUsers(database: Database) {
                 call.respond(HttpStatusCode.Conflict)
         }
         get("count") {
-            throw Exception("execption")
             call.respondText(database.usersCount().toString())
         }
     }
