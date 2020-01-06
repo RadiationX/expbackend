@@ -3,7 +3,8 @@ package ru.radiationx.common
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
-import io.ktor.util.date.*
+import io.ktor.util.date.GMTDate
+import io.ktor.util.date.Month
 
 /**
  * According to mask: "yyyy-MM-dd'T'HH:mm:ss"

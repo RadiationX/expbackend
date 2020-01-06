@@ -1,8 +1,9 @@
 package ru.radiationx
 
-import com.google.gson.reflect.TypeToken
-import io.ktor.application.*
-import io.ktor.auth.Principal
+import io.ktor.application.Application
+import io.ktor.application.ApplicationCallPipeline
+import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.auth.authentication
 import io.ktor.features.*
 import io.ktor.gson.gson
@@ -13,32 +14,54 @@ import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.request.header
-import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
+import org.koin.ktor.ext.Koin
+import org.koin.ktor.ext.inject
+import ru.radiationx.api.attachApiRouting
+import ru.radiationx.api.job.launchSyncJob
 import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
 import ru.radiationx.common.GMTDateSerializer
-import java.lang.reflect.Type
+import ru.radiationx.domain.config.ServiceConfigHolder
+import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.entity.KotlinConfPrincipal
+import ru.radiationx.domain.exception.*
+import ru.radiationx.domain.repository.SessionizeRepository
+import ru.radiationx.domain.usecase.*
 
 
 internal fun Application.main() {
-    val config = environment.config
-    val serviceConfig = config.config("service")
-    val mode = serviceConfig.property("environment").getString()
-    log.info("Environment: $mode")
-    val sessionizeConfig = config.config("sessionize")
-    val sessionizeUrl = sessionizeConfig.property("url").getString()
-    val oldSessionizeUrl = sessionizeConfig.property("oldUrl").getString()
-    val sessionizeInterval = sessionizeConfig.property("interval").getString().toLong()
-    val adminSecret = serviceConfig.property("secret").getString()
-    val production = mode == "production"
+    install(Koin) {
+        modules(
+            listOf(
+                serviceConfigModule(this@main),
+                sessionizeConfigModule(this@main),
+                domainModule(this@main),
+                clientModule(this@main),
+                dataModule(this@main),
+                dataBaseModule(this@main)
+            )
+        )
+    }
 
-    if (!production) {
+    val serviceConfigHolder by inject<ServiceConfigHolder>()
+    val sessionizeConfigHolder by inject<SessionizeConfigHolder>()
+    val sessionizeRepository by inject<SessionizeRepository>()
+
+    val favoriteUseCase by inject<FavoriteUseCase>()
+    val fullInfoUseCase by inject<FullInfoUseCase>()
+    val liveVideoUseCase by inject<LiveVideoUseCase>()
+    val sessionizeUseCase by inject<SessionizeUseCase>()
+    val timeUseCase by inject<TimeUseCase>()
+    val userUseCase by inject<UserUseCase>()
+    val voteUseCase by inject<VoteUseCase>()
+
+    if (!serviceConfigHolder.production) {
         install(CallLogging)
     }
 
@@ -75,10 +98,8 @@ internal fun Application.main() {
 
     install(ContentNegotiation) {
         gson {
-            val listType: Type = object : TypeToken<GMTDate>() {}.type
             registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
             serializeNulls()
-            //registerTypeHierarchyAdapter(GMTDate::class.java, GMTDateSerializer)
         }
     }
 
@@ -89,7 +110,6 @@ internal fun Application.main() {
         listOf(HttpMethod.Put, HttpMethod.Delete, HttpMethod.Options).forEach { method(it) }
     }
 
-    val database = DatabaseModule(this)
     install(Routing) {
         authenticate()
         static {
@@ -97,14 +117,18 @@ internal fun Application.main() {
             files("static")
         }
 
-        api(database, sessionizeUrl, oldSessionizeUrl, adminSecret)
+        attachApiRouting(
+            favoriteUseCase,
+            fullInfoUseCase,
+            liveVideoUseCase,
+            sessionizeUseCase,
+            timeUseCase,
+            userUseCase,
+            voteUseCase
+        )
     }
 
-    intercept(ApplicationCallPipeline.Features) {
-        //throw Exception("Intercepted")
-        call.response.header("kekkeke", call.response.status()?.description ?: "watafak")
-    }
-    launchSyncJob(sessionizeUrl, oldSessionizeUrl, sessionizeInterval)
+    launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
 }
 
 private fun Route.authenticate() {
@@ -116,8 +140,6 @@ private fun Route.authenticate() {
         call.authentication.principal(KotlinConfPrincipal(token))
     }
 }
-
-internal class KotlinConfPrincipal(val token: String) : Principal
 
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
     is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable

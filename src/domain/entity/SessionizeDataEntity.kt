@@ -1,17 +1,11 @@
-package ru.radiationx.common
+package ru.radiationx.domain.entity
 
 import com.google.gson.annotations.SerializedName
-import io.ktor.util.date.*
+import io.ktor.util.date.GMTDate
+import io.ktor.util.date.Month
 
-class ConferenceData(
-    val allData: SessionizeData = SessionizeData(),
-    val favorites: List<String> = emptyList(),
-    val votes: List<VoteData> = emptyList(),
-    val liveVideos: List<LiveVideo> = emptyList(),
-    val votesCountRequired: Int
-)
 
-class SessionizeData(
+data class SessionizeData(
     val sessions: List<SessionData> = emptyList(),
     val rooms: List<RoomData> = emptyList(),
     val speakers: List<SpeakerData> = emptyList(),
@@ -82,11 +76,6 @@ class CategoryData(
     val items: List<CategoryItemData> = emptyList()
 )
 
-class VoteData(
-    val sessionId: String,
-    val rating: RatingData? = null
-)
-
 class QuestionAnswerData(
     val questionId: Int,
     val answerValue: String
@@ -109,22 +98,6 @@ class PartnerData(
     val logo: String,
     val description: String
 )
-
-class LiveVideo(val room: Int, val videoId: String)
-
-/**
- * TODO: remove when serialization supports typeOf<EnumClass>()
- */
-data class RatingData(val value: Int) {
-    companion object {
-        val BAD = RatingData(-1)
-        val OK = RatingData(0)
-        val GOOD = RatingData(1)
-
-        fun valueOf(value: Int): RatingData =
-            listOf(BAD, OK, GOOD).find { it.value == value } ?: error("Invalid rating value")
-    }
-}
 
 
 fun Month.displayName(): String = name
