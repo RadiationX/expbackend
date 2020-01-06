@@ -14,8 +14,5 @@ class UserRepositoryImpl(
     override suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean =
         userDbDataSource.createUser(uuid, remote, timestamp)
 
-    override suspend fun getAllUsers(): List<User> {
-        println("repo getAllUsers at thread ${Thread.currentThread()}")
-        return userDbDataSource.getAllUsers()
-    }
+    override suspend fun getAllUsers(): List<User> = userDbDataSource.getAllUsers()
 }

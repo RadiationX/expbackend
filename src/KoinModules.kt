@@ -65,9 +65,9 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun dataModule(application: Application) = module(createdAtStart = true) {
-    single<FavoriteDbDataSource>()
-    single<UserDbDataSource>()
-    single<VoteDbDataSource>()
+    single { FavoriteDbDataSource(get(named(DB_POOL)), get()) }
+    single { UserDbDataSource(get(named(DB_POOL)), get()) }
+    single { VoteDbDataSource(get(named(DB_POOL)), get()) }
 
     singleBy<FavoriteRepository, FavoriteRepositoryImpl>()
     singleBy<LiveVideoRepository, LiveVideoRepositoryImpl>()
