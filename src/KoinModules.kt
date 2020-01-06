@@ -104,10 +104,22 @@ fun dataBaseModule(application: Application) = module(createdAtStart = true) {
         maximumPoolSize = poolSize
         username = user
         password = pass
+        addDataSourceProperty("cachePrepStmts", true)
+        addDataSourceProperty("prepStmtCacheSize", 250)
+        addDataSourceProperty("prepStmtCacheSqlLimit", 2048)
+        addDataSourceProperty("useServerPrepStmts", true)
+        addDataSourceProperty("useLocalSessionState", true)
+        addDataSourceProperty("rewriteBatchedStatements", true)
+        addDataSourceProperty("cacheResultSetMetadata", true)
+        addDataSourceProperty("cacheServerConfiguration", true)
+        addDataSourceProperty("elideSetAutoCommits", true)
+        addDataSourceProperty("maintainTimeStats", false)
         validate()
     }
 
     val database = Database.connect(HikariDataSource(hikariConfig))
+    //val database = Database.connect(url, "com.mysql.jdbc.Driver", user, pass)
+
     val dispatcher = newFixedThreadPoolContext(poolSize, "database-pool")
 
     transaction(database) {

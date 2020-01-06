@@ -46,6 +46,7 @@ services:
     ports:
       - 3308:3306
     volumes:
+      - ./service/mariadb/my.cnf:/etc/mysql/conf.d/my1.cnf
       - ./data/mariadb:/var/lib/mysql
       - ./www/sql/main.sql:/docker-entrypoint-initdb.d/01-main.sql
     environment:
