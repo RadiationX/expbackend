@@ -41,8 +41,9 @@ services:
 #      - app-network
 
   mariadb:
+    container_name: mariadb
     image: mariadb:10.3
-    restart: unless-stopped
+    restart: always
     ports:
       - 3308:3306
     volumes:
@@ -54,7 +55,29 @@ services:
       - MYSQL_PASSWORD=mysqlpwd
       - MYSQL_ROOT_PASSWORD=mysqlrootpwd
       - MYSQL_DATABASE=mysqldb
+#    networks:
+#      - db-network
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+#      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+#      - PMA_PORT=3308
+      - MYSQL_ROOT_PASSWORD=mysqlrootpwd
+    ports:
+      - 8181:80
+    volumes:
+      - ./service/phpmyadmin:/etc/phpmyadmin
+#    networks:
+#      - db-network
 
 networks:
   app-network:
-    driver: bridge
+#    driver: bridge
+  db-network:
+#    driver: bridge
