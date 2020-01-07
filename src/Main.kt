@@ -25,11 +25,13 @@ import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
 import ru.radiationx.common.GMTDateSerializer
+import ru.radiationx.common.LocalDateTimeAdapter
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.exception.*
 import ru.radiationx.domain.repository.SessionizeRepository
+import java.time.LocalDateTime
 
 
 internal fun Application.main() {
@@ -90,6 +92,7 @@ internal fun Application.main() {
     install(ContentNegotiation) {
         gson {
             registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
+            registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter)
             serializeNulls()
         }
     }
