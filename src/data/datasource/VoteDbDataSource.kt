@@ -1,8 +1,12 @@
 package ru.radiationx.data.datasource
 
+import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.radiationx.data.asUser
+import ru.radiationx.data.asVote
+import ru.radiationx.data.entity.db.VotesRow
 import ru.radiationx.data.entity.db.VotesTable
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
@@ -16,16 +20,16 @@ class VoteDbDataSource(
 
     suspend fun getVotes(uuid: String): List<Vote> = withContext(dispatcher) {
         transaction(database) {
-            VotesTable
-                .select { VotesTable.uuid eq uuid }
+            VotesRow
+                .find { VotesTable.uuid eq uuid }
                 .map { it.asVote() }
         }
     }
 
     suspend fun getAllVotes(): List<Vote> = withContext(dispatcher) {
         transaction(database) {
-            VotesTable
-                .selectAll()
+            VotesRow
+                .all()
                 .map { it.asVote() }
         }
     }
@@ -37,9 +41,8 @@ class VoteDbDataSource(
         timestamp: LocalDateTime
     ): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val count = VotesTable
-                .slice(VotesTable.uuid, VotesTable.sessionId)
-                .select { (VotesTable.uuid eq uuid) and (VotesTable.sessionId eq sessionId) }
+            val count = VotesRow
+                .find { (VotesTable.uuid eq uuid) and (VotesTable.sessionId eq sessionId) }
                 .count()
 
             if (count == 0) {
@@ -81,12 +84,4 @@ class VoteDbDataSource(
             map
         }
     }
-
-    private fun ResultRow.asVote(): Vote = Vote(
-        get(VotesTable.id),
-        LocalDateTime.parse(get(VotesTable.timestamp)),
-        get(VotesTable.uuid),
-        get(VotesTable.uuid),
-        Rating.valueOf(get(VotesTable.rating))
-    )
 }

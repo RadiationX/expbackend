@@ -3,6 +3,8 @@ package ru.radiationx.data.datasource
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.radiationx.data.asUser
+import ru.radiationx.data.entity.db.UserRow
 import ru.radiationx.data.entity.db.UsersTable
 import ru.radiationx.domain.entity.User
 import java.time.LocalDateTime
@@ -15,26 +17,25 @@ class UserDbDataSource(
 
     suspend fun getUser(uuid: String): User? = withContext(dispatcher) {
         transaction(database) {
-            UsersTable
-                .select { UsersTable.uuid eq uuid }
+            UserRow
+                .find { UsersTable.uuid eq uuid }
                 .limit(1)
-                .map { it.asUser() }
+                .mapLazy { it.asUser() }
                 .firstOrNull()
         }
     }
 
     suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val count = UsersTable
-                .slice(UsersTable.uuid)
-                .select { UsersTable.uuid eq uuid }
+            val count = UserRow
+                .find { UsersTable.uuid eq uuid }
                 .count()
 
             if (count == 0) {
-                UsersTable.insert {
-                    it[UsersTable.uuid] = uuid
-                    it[UsersTable.timestamp] = timestamp.toString()
-                    it[UsersTable.remote] = remote
+                UserRow.new {
+                    this.uuid = uuid
+                    this.remote = remote
+                    this.timestamp = timestamp.toString()
                 }
             }
             count == 0
@@ -43,20 +44,13 @@ class UserDbDataSource(
 
     suspend fun getAllUsers(): List<User> = withContext(dispatcher) {
         transaction(database) {
-            UsersTable.selectAll().toList().map { it.asUser() }
+            UserRow.all().map { it.asUser() }
         }
     }
 
     suspend fun getAllUsersCount(): Int = withContext(dispatcher) {
         transaction(database) {
-            UsersTable.selectAll().count()
+            UserRow.count()
         }
     }
-
-    private fun ResultRow.asUser(): User = User(
-        get(UsersTable.id),
-        get(UsersTable.uuid),
-        get(UsersTable.remote),
-        LocalDateTime.parse(get(UsersTable.timestamp))
-    )
 }
