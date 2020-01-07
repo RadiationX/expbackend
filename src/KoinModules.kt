@@ -16,6 +16,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
+import ru.radiationx.api.BatchApiRouting
+import ru.radiationx.api.route.*
 import ru.radiationx.common.GMTDateSerializer
 import ru.radiationx.data.datasource.FavoriteDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
@@ -62,6 +64,18 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
     single<TimeUseCase>()
     single<UserUseCase>()
     single<VoteUseCase>()
+}
+
+fun apiModule(application: Application) = module(createdAtStart = true) {
+    single<ApiFavoriteRoute>()
+    single<ApiFullInfoRoute>()
+    single<ApiLiveVideoRoute>()
+    single<ApiSessionizeRoute>()
+    single<ApiTimeRoute>()
+    single<ApiUsersRoute>()
+    single<ApiVoteRoute>()
+
+    single<BatchApiRouting>()
 }
 
 fun dataModule(application: Application) = module(createdAtStart = true) {

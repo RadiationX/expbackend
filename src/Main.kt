@@ -1,10 +1,8 @@
 package ru.radiationx
 
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.auth.authentication
+import io.ktor.auth.principal
 import io.ktor.features.*
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
@@ -21,8 +19,8 @@ import io.ktor.util.date.GMTDate
 import io.ktor.util.error
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import ru.radiationx.api.attachApiRouting
 import ru.radiationx.api.job.launchSyncJob
+import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
@@ -32,7 +30,6 @@ import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.exception.*
 import ru.radiationx.domain.repository.SessionizeRepository
-import ru.radiationx.domain.usecase.*
 
 
 internal fun Application.main() {
@@ -43,6 +40,7 @@ internal fun Application.main() {
                 sessionizeConfigModule(this@main),
                 domainModule(this@main),
                 clientModule(this@main),
+                apiModule(this@main),
                 dataModule(this@main),
                 dataBaseModule(this@main)
             )
@@ -52,14 +50,7 @@ internal fun Application.main() {
     val serviceConfigHolder by inject<ServiceConfigHolder>()
     val sessionizeConfigHolder by inject<SessionizeConfigHolder>()
     val sessionizeRepository by inject<SessionizeRepository>()
-
-    val favoriteUseCase by inject<FavoriteUseCase>()
-    val fullInfoUseCase by inject<FullInfoUseCase>()
-    val liveVideoUseCase by inject<LiveVideoUseCase>()
-    val sessionizeUseCase by inject<SessionizeUseCase>()
-    val timeUseCase by inject<TimeUseCase>()
-    val userUseCase by inject<UserUseCase>()
-    val voteUseCase by inject<VoteUseCase>()
+    val batchApiModules by inject<BatchApiRouting>()
 
     if (!serviceConfigHolder.production) {
         install(CallLogging)
@@ -116,16 +107,7 @@ internal fun Application.main() {
             default("static/index.html")
             files("static")
         }
-
-        attachApiRouting(
-            favoriteUseCase,
-            fullInfoUseCase,
-            liveVideoUseCase,
-            sessionizeUseCase,
-            timeUseCase,
-            userUseCase,
-            voteUseCase
-        )
+        batchApiModules.attachRoute(this)
     }
 
     launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
@@ -160,3 +142,5 @@ private fun wrapError(throwable: Throwable): BaseResponse =
             )
         )
     )
+
+fun ApplicationCall.findPrincipal(): KotlinConfPrincipal? = principal()
