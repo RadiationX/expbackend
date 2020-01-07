@@ -10,4 +10,6 @@ interface UserRepository {
     suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean
 
     suspend fun getAllUsers(): List<User>
+
+    suspend fun getAllUsersCount(): Int
 }

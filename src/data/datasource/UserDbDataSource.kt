@@ -47,6 +47,12 @@ class UserDbDataSource(
         }
     }
 
+    suspend fun getAllUsersCount(): Int = withContext(dispatcher) {
+        transaction(database) {
+            UsersTable.selectAll().count()
+        }
+    }
+
     private fun ResultRow.asUser(): User = User(
         get(UsersTable.id),
         get(UsersTable.uuid),

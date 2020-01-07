@@ -4,9 +4,9 @@ import org.jetbrains.exposed.sql.Table
 
 internal object UsersTable : Table("users") {
     val id = integer("id").autoIncrement()
-    val uuid = varchar("uuid", 50).index()
-    val remote = varchar("remote", 50)
-    val timestamp = varchar("timestamp", 50)
+    val uuid = varchar("uuid", 50).index().default("")
+    val remote = varchar("remote", 50).default("")
+    val timestamp = varchar("timestamp", 50).default("")
 
     override val primaryKey: PrimaryKey = PrimaryKey(id)
 }

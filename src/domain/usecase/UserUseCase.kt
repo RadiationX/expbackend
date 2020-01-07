@@ -21,4 +21,6 @@ class UserUseCase(
 
     suspend fun getAllUsers(): List<User> = userRepository.getAllUsers()
 
+    suspend fun getAllUsersCount(): Int = userRepository.getAllUsersCount()
+
 }

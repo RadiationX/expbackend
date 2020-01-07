@@ -1,5 +1,6 @@
 package ru.radiationx
 
+import com.mysql.jdbc.Connection
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
@@ -8,9 +9,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.date.GMTDate
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.newFixedThreadPoolContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -31,6 +34,7 @@ import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
 import ru.radiationx.domain.usecase.*
+import java.lang.Exception
 
 const val DB_POOL = "database-pool"
 const val SESSIONIZE_CLIENT = "sessionize-client"
@@ -105,15 +109,38 @@ fun clientModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun dataBaseModule(application: Application) = module(createdAtStart = true) {
-    val appConfig = application.environment.config.config("database")
+    val useDb = application.environment.config.config("database").property("use").getString()
+
+    val database = when (useDb) {
+        "mysql" -> initMySqlDatabase(application)
+        "sqlite" -> initSQLiteDatabase(application)
+        else -> throw Exception("Unknown db=$useDb")
+    }
+
+    //val dispatcher = newFixedThreadPoolContext(50, "database-pool")
+    val dispatcher = Dispatchers.IO
+
+    transaction(database) {
+        SchemaUtils.create(
+            UsersTable,
+            FavoritesTable,
+            VotesTable
+        )
+    }
+
+    single(named(DB_POOL)) { dispatcher }
+    single { database }
+}
+
+private fun initMySqlDatabase(application: Application): Database {
+    val appConfig = application.environment.config.config("database").config("mysql")
     val url = appConfig.property("connection").getString()
     val user = appConfig.property("user").getString()
     val pass = appConfig.property("pass").getString()
     val poolSize = appConfig.property("poolSize").getString().toInt()
     application.log.info("Connecting to database at '$url'")
 
-
-    val hikariConfig = HikariConfig().apply {
+    val config = HikariConfig().apply {
         jdbcUrl = url
         maximumPoolSize = poolSize
         username = user
@@ -130,21 +157,24 @@ fun dataBaseModule(application: Application) = module(createdAtStart = true) {
         addDataSourceProperty("maintainTimeStats", false)
         validate()
     }
+    return Database.connect(HikariDataSource(config))
+}
 
-    val database = Database.connect(HikariDataSource(hikariConfig))
-    //val database = Database.connect(url, "com.mysql.jdbc.Driver", user, pass)
+private fun initSQLiteDatabase(application: Application): Database {
+    val appConfig = application.environment.config.config("database").config("sqlite")
+    val url = appConfig.property("connection").getString()
+    val poolSize = appConfig.property("poolSize").getString().toInt()
+    application.log.info("Connecting to database at '$url'")
 
-    val dispatcher = newFixedThreadPoolContext(poolSize, "database-pool")
-
-    transaction(database) {
-        SchemaUtils.create(
-            UsersTable,
-            FavoritesTable,
-            VotesTable
-        )
+    val config = HikariConfig().apply {
+        jdbcUrl = url
+        maximumPoolSize = poolSize
+        driverClassName = "org.sqlite.JDBC"
+        validate()
     }
 
-    single(named(DB_POOL)) { dispatcher }
-    single { database }
+    val database = Database.connect(HikariDataSource(config))
+    TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
+    return database
 }
 

@@ -15,4 +15,6 @@ class UserRepositoryImpl(
         userDbDataSource.createUser(uuid, remote, timestamp)
 
     override suspend fun getAllUsers(): List<User> = userDbDataSource.getAllUsers()
+
+    override suspend fun getAllUsersCount(): Int = userDbDataSource.getAllUsersCount()
 }
