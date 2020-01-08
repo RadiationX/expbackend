@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import ru.radiationx.JwtConfig
 import ru.radiationx.UserPrincipal
 import ru.radiationx.base.respondBase
@@ -24,6 +25,7 @@ import ru.radiationx.data.entity.db.TokensTable
 import ru.radiationx.data.entity.db.UserRow
 import ru.radiationx.data.entity.db.UsersTable
 import ru.radiationx.user
+import ru.radiationx.userToken
 
 class ApiAuthRoute(
     private val database: Database
@@ -53,9 +55,8 @@ class ApiAuthRoute(
             }
             call.respondBase(data = createdUser)
         }
-
         authenticate(optional = true) {
-            get("login") {
+            post("login") {
                 val principal = call.user
                 if (principal != null) {
                     throw Exception("You already logined, bruh")
@@ -72,7 +73,7 @@ class ApiAuthRoute(
                 val user = userRow.asUser()
                 val userPrincipal = UserPrincipal(user.id)
                 val token = JwtConfig.makeToken(userPrincipal)
-                transaction {
+                transaction(database) {
                     TokensTable.insert {
                         it[this.userId] = userRow.id
                         it[this.token] = token
@@ -85,16 +86,19 @@ class ApiAuthRoute(
 
         authenticate(optional = true) {
             get("check") {
-                val token = call.request.parseAuthorizationHeader()?.render() ?: throw Exception("No auth header")
+                val token = call.userToken ?: throw Exception("No auth header")
                 val principal = call.user ?: throw Exception("No auth data")
 
-                val tokenRow = transaction {
-                    TokenRow
+                val user = transaction(database) {
+                    val tokenRow = TokenRow
                         .find { TokensTable.token eq token }
                         .firstOrNull()
-                        ?: throw Exception("Token not found")
+                    val userRow = tokenRow?.userId
+                    tokenRow ?: throw Exception("Token not found")
+                    userRow ?: throw Exception("No user found by token")
+                    userRow.asUser()
                 }
-                val user = tokenRow.userId?.asUser() ?: throw Exception("No user found by token")
+
                 if (user.id != principal.id) {
                     throw Exception("Wrong user by token. BRUH")
                 }

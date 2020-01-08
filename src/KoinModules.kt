@@ -26,6 +26,7 @@ import ru.radiationx.data.datasource.FavoriteDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.data.datasource.VoteDbDataSource
 import ru.radiationx.data.entity.db.FavoritesTable
+import ru.radiationx.data.entity.db.TokensTable
 import ru.radiationx.data.entity.db.UsersTable
 import ru.radiationx.data.entity.db.VotesTable
 import ru.radiationx.data.repository.*
@@ -123,6 +124,7 @@ fun dataBaseModule(application: Application) = module(createdAtStart = true) {
 
     transaction(database) {
         SchemaUtils.create(
+            TokensTable,
             UsersTable,
             FavoritesTable,
             VotesTable

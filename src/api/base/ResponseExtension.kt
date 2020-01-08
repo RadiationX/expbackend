@@ -7,8 +7,8 @@ import io.ktor.response.respond
 //suspend fun ApplicationCall.respondBase(data: Any) = respond(data)
 suspend fun ApplicationCall.respondBase(status: HttpStatusCode = HttpStatusCode.OK, data: Any? = null) {
     if (data != null) {
-        respond(status, data)
+        respond(data)
     } else {
-        respond(status, BaseDataResponse<Unit>())
+        respond(BaseDataResponse<Unit>())
     }
 }

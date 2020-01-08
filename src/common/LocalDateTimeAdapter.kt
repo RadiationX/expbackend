@@ -9,11 +9,13 @@ import java.time.LocalDateTime
 
 internal object LocalDateTimeAdapter : TypeAdapter<LocalDateTime>() {
 
-    override fun write(writer: JsonWriter, obj: LocalDateTime) {
-        writer.value(obj.toString())
+    override fun write(writer: JsonWriter, obj: LocalDateTime?) {
+        val value = obj?.toString()
+        writer.value(value)
     }
 
-    override fun read(reader: JsonReader): LocalDateTime {
-        return LocalDateTime.parse(reader.nextString())
+    override fun read(reader: JsonReader): LocalDateTime? {
+        val value = reader.nextString()
+        return value?.let { LocalDateTime.parse(value) }
     }
 }

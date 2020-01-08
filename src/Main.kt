@@ -121,10 +121,9 @@ internal fun Application.main() {
             verifier(JwtConfig.verifier)
             realm = "ktor.io"
             validate {
-                val token = request.parseAuthorizationHeader()?.render()
+                val token = userToken
                 it.payload
                     .getClaim("userId").asInt()
-                    ?.also { userId -> println("validate $userId $token") }
                     ?.let { userId -> userValidator.checkToken(token, userId) }
             }
         }
@@ -140,6 +139,9 @@ internal fun Application.main() {
 
     launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
 }
+
+val ApplicationCall.userToken
+    get() = request.parseAuthorizationHeader()?.render()?.removePrefix("Bearer ")
 
 val ApplicationCall.user
     get() = authentication.principal<UserPrincipal>()

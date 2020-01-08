@@ -2,6 +2,8 @@ package ru.radiationx.domain.helper
 
 import io.ktor.application.call
 import io.ktor.auth.parseAuthorizationHeader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.UserPrincipal
@@ -22,13 +24,15 @@ class UserValidator(
     fun checkToken(token: String?, userId: Int): UserPrincipal {
         token ?: throw Exception("No token")
 
-        val tokenRow = transaction {
-            TokenRow
+        val user = transaction {
+            val tokenRow = TokenRow
                 .find { TokensTable.token eq token }
                 .firstOrNull()
-                ?: throw Exception("Token not found")
+            val userRow = tokenRow?.userId
+            tokenRow ?: throw Exception("Token not found")
+            userRow ?: throw Exception("No user found by token")
+            userRow.asUser()
         }
-        val user = tokenRow.userId?.asUser() ?: throw Exception("No user found by token")
         if (user.id != userId) {
             throw Exception("Wrong user by token. BRUH")
         }
@@ -45,9 +49,6 @@ class UserValidator(
 
     suspend fun checkHasUser(principal: UserPrincipal?): UserPrincipal {
         principal ?: throw Unauthorized()
-        if (userRepository.getUser(0) == null) {
-            throw Unauthorized()
-        }
         return principal
     }
 }

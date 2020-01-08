@@ -5,9 +5,10 @@ import org.jetbrains.exposed.sql.ReferenceOption
 
 /*
 * Tables
+* В reference нужно указывать Table, а не column, если таблица от IntIdTable
 * */
 internal object TokensTable : BaseIntIdTable("auth_tokens") {
-    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val userId = reference("user_id", UsersTable, ReferenceOption.SET_NULL).nullable()
     val token = varchar("token", 255)
     val ip = varchar("ip", 50)
     val info = varchar("info", 255).nullable()
@@ -19,12 +20,12 @@ internal object UsersTable : BaseIntIdTable("users") {
 }
 
 internal object FavoritesTable : BaseIntIdTable("favorites") {
-    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val userId = reference("user_id", UsersTable, ReferenceOption.SET_NULL).nullable()
     val sessionId = varchar("session_id", 50)
 }
 
 internal object VotesTable : BaseIntIdTable("votes") {
-    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val userId = reference("user_id", UsersTable, ReferenceOption.SET_NULL).nullable()
     val sessionId = varchar("session_id", 50)
     val rating = integer("rating")
 }
