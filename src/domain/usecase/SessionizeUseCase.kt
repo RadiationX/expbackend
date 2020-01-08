@@ -1,7 +1,6 @@
 package ru.radiationx.domain.usecase
 
 import ru.radiationx.UserPrincipal
-import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
 

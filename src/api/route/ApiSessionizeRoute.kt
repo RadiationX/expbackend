@@ -5,7 +5,6 @@ import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
 import io.ktor.routing.Routing
 import io.ktor.routing.post
-import ru.radiationx.findPrincipal
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.SessionizeUseCase
 import ru.radiationx.user

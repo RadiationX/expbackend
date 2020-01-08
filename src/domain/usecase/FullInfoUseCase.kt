@@ -22,7 +22,7 @@ class FullInfoUseCase(
         val liveInfo = liveVideoRepository.getVideos()
         val votesRequired = voteRepository.getRequired()
         return try {
-            val userId = userValidator.checkHasUser(principal).id
+            val userId = userValidator.validateUser(principal).id
             val votes = voteRepository.getVotes(userId)
             val favorites = favoriteRepository.getFavorites(userId)
             Conference(data, favorites, votes, liveInfo, votesRequired)

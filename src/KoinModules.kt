@@ -10,7 +10,6 @@ import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.newFixedThreadPoolContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -22,6 +21,7 @@ import org.koin.experimental.builder.singleBy
 import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.api.route.*
 import ru.radiationx.common.GMTDateSerializer
+import ru.radiationx.data.datasource.AuthDbDataSource
 import ru.radiationx.data.datasource.FavoriteDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.data.datasource.VoteDbDataSource
@@ -35,7 +35,6 @@ import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
 import ru.radiationx.domain.usecase.*
-import java.lang.Exception
 
 const val DB_POOL = "database-pool"
 const val SESSIONIZE_CLIENT = "sessionize-client"
@@ -62,6 +61,7 @@ fun sessionizeConfigModule(application: Application) = module(createdAtStart = t
 fun domainModule(application: Application) = module(createdAtStart = true) {
     single<UserValidator>()
 
+    single<AuthUseCase>()
     single<FavoriteUseCase>()
     single<FullInfoUseCase>()
     single<LiveVideoUseCase>()
@@ -85,10 +85,12 @@ fun apiModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun dataModule(application: Application) = module(createdAtStart = true) {
+    single { AuthDbDataSource(get(named(DB_POOL)), get()) }
     single { FavoriteDbDataSource(get(named(DB_POOL)), get()) }
     single { UserDbDataSource(get(named(DB_POOL)), get()) }
     single { VoteDbDataSource(get(named(DB_POOL)), get()) }
 
+    singleBy<AuthRepository, AuthRepositoryImpl>()
     singleBy<FavoriteRepository, FavoriteRepositoryImpl>()
     singleBy<LiveVideoRepository, LiveVideoRepositoryImpl>()
     single<SessionizeRepository> {

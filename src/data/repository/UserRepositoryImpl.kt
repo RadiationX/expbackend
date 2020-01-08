@@ -3,7 +3,6 @@ package ru.radiationx.data.repository
 import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.domain.entity.User
 import ru.radiationx.domain.repository.UserRepository
-import java.time.LocalDateTime
 
 class UserRepositoryImpl(
     private val userDbDataSource: UserDbDataSource

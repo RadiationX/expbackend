@@ -1,7 +1,6 @@
 package ru.radiationx.domain.usecase
 
 import ru.radiationx.UserPrincipal
-import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
 import ru.radiationx.domain.exception.BadRequest
@@ -22,7 +21,7 @@ class VoteUseCase(
 ) {
 
     suspend fun getVotes(principal: UserPrincipal?): List<Vote> {
-        val userId = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         return voteRepository.getVotes(userId)
     }
 
@@ -32,7 +31,7 @@ class VoteUseCase(
     }
 
     suspend fun changeVote(principal: UserPrincipal?, sessionId: String?, rating: Rating?): Boolean {
-        val userId = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         rating ?: throw BadRequest()
 
@@ -53,7 +52,7 @@ class VoteUseCase(
     }
 
     suspend fun deleteVote(principal: UserPrincipal?, sessionId: String?): Boolean {
-        val userId = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         return voteRepository.deleteVote(userId, sessionId)
     }

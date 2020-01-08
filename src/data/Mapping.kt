@@ -1,13 +1,10 @@
 package ru.radiationx.data
 
 import ru.radiationx.data.entity.db.FavoriteRow
+import ru.radiationx.data.entity.db.TokenRow
 import ru.radiationx.data.entity.db.UserRow
 import ru.radiationx.data.entity.db.VotesRow
-import ru.radiationx.domain.entity.Favorite
-import ru.radiationx.domain.entity.Rating
-import ru.radiationx.domain.entity.User
-import ru.radiationx.domain.entity.Vote
-import java.time.LocalDateTime
+import ru.radiationx.domain.entity.*
 
 
 internal fun UserRow.asUser(): User = User(
@@ -33,4 +30,12 @@ internal fun VotesRow.asVote(): Vote = Vote(
     Rating.valueOf(rating),
     createdAt,
     updatedAt
+)
+
+internal fun TokenRow.asToken(): Token = Token(
+    id.value,
+    user?.asUser(),
+    token,
+    ip,
+    info
 )

@@ -12,18 +12,18 @@ class FavoriteUseCase(
 ) {
 
     suspend fun getFavorites(principal: UserPrincipal?): List<Favorite> {
-        val userId = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         return favoriteRepository.getFavorites(userId)
     }
 
     suspend fun createFavorite(principal: UserPrincipal?, sessionId: String?): Boolean {
-        val uuid = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
-        return favoriteRepository.createFavorite(uuid, sessionId)
+        return favoriteRepository.createFavorite(userId, sessionId)
     }
 
     suspend fun deleteFavorite(principal: UserPrincipal?, sessionId: String?): Boolean {
-        val userId = userValidator.checkHasUser(principal).id
+        val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         return favoriteRepository.deleteFavorite(userId, sessionId)
     }

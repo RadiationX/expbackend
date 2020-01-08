@@ -6,7 +6,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
-import ru.radiationx.findPrincipal
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.TimeUseCase
 import ru.radiationx.user

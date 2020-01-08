@@ -3,7 +3,10 @@ package ru.radiationx
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.application.*
+import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.auth.*
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
@@ -15,7 +18,7 @@ import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.Routing
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
 import kotlinx.coroutines.Dispatchers
@@ -23,18 +26,16 @@ import kotlinx.coroutines.withContext
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import org.mindrot.jbcrypt.BCrypt
-import ru.radiationx.api.job.launchSyncJob
 import ru.radiationx.api.BatchApiRouting
+import ru.radiationx.api.job.launchSyncJob
 import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
 import ru.radiationx.common.GMTDateSerializer
 import ru.radiationx.common.LocalDateTimeAdapter
-import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.entity.KotlinConfPrincipal
-import ru.radiationx.domain.entity.User
 import ru.radiationx.domain.exception.*
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
@@ -112,7 +113,6 @@ internal fun Application.main() {
         listOf(HttpMethod.Put, HttpMethod.Delete, HttpMethod.Options).forEach { method(it) }
     }
 
-    val userDbDataSource by inject<UserDbDataSource>()
     val userValidator by inject<UserValidator>()
 
     install(Authentication) {
@@ -120,10 +120,9 @@ internal fun Application.main() {
             verifier(JwtConfig.verifier)
             realm = "ktor.io"
             validate {
-                val token = userToken
-                it.payload
-                    .getClaim("userId").asInt()
-                    ?.let { userId -> userValidator.checkToken(token, userId) }
+                val token = userToken ?: return@validate null
+                val userId = it.payload.getClaim("userId").asInt() ?: return@validate null
+                userValidator.getPrincipal(userId, token)
             }
         }
     }
@@ -188,17 +187,6 @@ object JwtConfig {
     private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
 
 }
-
-
-/*private fun Route.authenticate() {
-    val bearer = "Bearer "
-    intercept(ApplicationCallPipeline.Features) {
-        val authorization = call.request.header(HttpHeaders.Authorization) ?: return@intercept
-        if (!authorization.startsWith(bearer)) return@intercept
-        val token = authorization.removePrefix(bearer).trim()
-        call.authentication.principal(KotlinConfPrincipal(token))
-    }
-}*/
 
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
     is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable

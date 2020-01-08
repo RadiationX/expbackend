@@ -2,9 +2,7 @@ package ru.radiationx.api.route
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
-import io.ktor.features.origin
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
@@ -17,9 +15,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.base.respondBase
 import ru.radiationx.data.entity.db.UsersTable
 import ru.radiationx.domain.usecase.UserUseCase
-import java.time.Clock
-import java.time.LocalDateTime
-import java.util.*
 
 class ApiUsersRoute(
     private val userUseCase: UserUseCase,

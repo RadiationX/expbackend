@@ -6,7 +6,6 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.FullInfoUseCase
-import ru.radiationx.findPrincipal
 import ru.radiationx.user
 
 class ApiFullInfoRoute(

@@ -2,12 +2,10 @@ package ru.radiationx.data.entity.db
 
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.`java-time`.datetime
 import java.time.Clock
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 fun currentUtc(): LocalDateTime = LocalDateTime.now(Clock.systemUTC())
 

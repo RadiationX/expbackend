@@ -1,10 +1,7 @@
 package ru.radiationx.domain.usecase
 
 import ru.radiationx.domain.entity.User
-import ru.radiationx.domain.exception.BadRequest
 import ru.radiationx.domain.repository.UserRepository
-import java.time.Clock
-import java.time.LocalDateTime
 
 class UserUseCase(
     private val userRepository: UserRepository

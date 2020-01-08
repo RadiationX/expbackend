@@ -2,12 +2,14 @@ package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.data.asFavorite
 import ru.radiationx.data.entity.db.FavoriteRow
 import ru.radiationx.data.entity.db.FavoritesTable
-import ru.radiationx.data.entity.db.VotesTable
 import ru.radiationx.domain.entity.Favorite
 import kotlin.coroutines.CoroutineContext
 

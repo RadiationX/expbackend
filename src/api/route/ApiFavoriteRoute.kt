@@ -5,7 +5,6 @@ import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.routing.*
-import ru.radiationx.findPrincipal
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.FavoriteUseCase
 import ru.radiationx.user

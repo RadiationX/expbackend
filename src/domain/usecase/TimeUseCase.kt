@@ -2,7 +2,6 @@ package ru.radiationx.domain.usecase
 
 import io.ktor.util.date.GMTDate
 import ru.radiationx.UserPrincipal
-import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.exception.BadRequest
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.TimeRepository

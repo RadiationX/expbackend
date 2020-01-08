@@ -36,7 +36,7 @@ internal object VotesTable : BaseIntIdTable("votes") {
 internal class TokenRow(id: EntityID<Int>) : BaseIntEntity(id, TokensTable) {
     companion object : BaseIntEntityClass<TokenRow>(TokensTable)
 
-    var userId by UserRow optionalReferencedOn TokensTable.userId
+    var user by UserRow optionalReferencedOn TokensTable.userId
     var token by TokensTable.token
     var ip by TokensTable.ip
     var info by TokensTable.info

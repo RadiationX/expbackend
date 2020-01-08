@@ -1,6 +1,5 @@
 package ru.radiationx.api
 
-import io.ktor.auth.authenticate
 import io.ktor.routing.Routing
 import ru.radiationx.api.route.*
 

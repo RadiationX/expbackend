@@ -3,8 +3,6 @@ package ru.radiationx.common
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
-import io.ktor.util.date.GMTDate
-import io.ktor.util.date.Month
 import java.time.LocalDateTime
 
 internal object LocalDateTimeAdapter : TypeAdapter<LocalDateTime>() {
