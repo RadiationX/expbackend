@@ -1,6 +1,6 @@
 package ru.radiationx.domain.usecase
 
-import ru.radiationx.UserPrincipal
+import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
 import ru.radiationx.domain.exception.BadRequest

@@ -1,7 +1,7 @@
 package ru.radiationx.data.repository
 
 import io.ktor.auth.UserPasswordCredential
-import ru.radiationx.UserPrincipal
+import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.data.datasource.AuthDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.domain.entity.User

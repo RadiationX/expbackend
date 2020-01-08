@@ -1,6 +1,6 @@
 package ru.radiationx.domain.helper
 
-import ru.radiationx.UserPrincipal
+import ru.radiationx.domain.entity.UserPrincipal
 
 interface TokenMaker {
 

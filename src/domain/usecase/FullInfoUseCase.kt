@@ -1,6 +1,6 @@
 package ru.radiationx.domain.usecase
 
-import ru.radiationx.UserPrincipal
+import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.entity.Conference
 import ru.radiationx.domain.exception.Unauthorized
 import ru.radiationx.domain.helper.UserValidator

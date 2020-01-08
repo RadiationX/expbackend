@@ -18,11 +18,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import org.mindrot.jbcrypt.BCrypt
 import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.api.job.launchSyncJob
 import ru.radiationx.base.BaseError
@@ -34,7 +31,7 @@ import ru.radiationx.common.LocalDateTimeAdapter
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.config.TokenConfigHolder
-import ru.radiationx.domain.entity.KotlinConfPrincipal
+import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.exception.*
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
@@ -139,14 +136,6 @@ internal fun Application.main() {
     launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
 }
 
-val ApplicationCall.userToken
-    get() = request.parseAuthorizationHeader()?.render()?.removePrefix("Bearer ")
-
-val ApplicationCall.user
-    get() = authentication.principal<UserPrincipal>()
-
-class UserPrincipal(val id: Int) : Principal
-
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
     is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable
     is BadRequest -> HttpStatusCode.BadRequest
@@ -167,4 +156,8 @@ private fun wrapError(throwable: Throwable): BaseResponse =
         )
     )
 
-fun ApplicationCall.findPrincipal(): KotlinConfPrincipal? = principal()
+val ApplicationCall.userToken
+    get() = request.parseAuthorizationHeader()?.render()?.removePrefix("Bearer ")
+
+val ApplicationCall.user
+    get() = authentication.principal<UserPrincipal>()
