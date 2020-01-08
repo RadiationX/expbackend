@@ -20,6 +20,7 @@ import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
 import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.api.route.*
+import ru.radiationx.common.BCryptHashHelper
 import ru.radiationx.common.GMTDateSerializer
 import ru.radiationx.common.JwtConfig
 import ru.radiationx.common.JwtTokenMaker
@@ -35,6 +36,7 @@ import ru.radiationx.data.repository.*
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.domain.helper.HashHelper
 import ru.radiationx.domain.helper.TokenMaker
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
@@ -86,7 +88,7 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
     single<VoteUseCase>()
 }
 
-fun apiModule(application: Application) = module(createdAtStart = true) {
+fun appModule(application: Application) = module(createdAtStart = true) {
     single<ApiAuthRoute>()
     single<ApiFavoriteRoute>()
     single<ApiFullInfoRoute>()
@@ -97,6 +99,8 @@ fun apiModule(application: Application) = module(createdAtStart = true) {
     single<ApiVoteRoute>()
 
     single<BatchApiRouting>()
+
+    singleBy<HashHelper, BCryptHashHelper>()
 }
 
 fun dataModule(application: Application) = module(createdAtStart = true) {

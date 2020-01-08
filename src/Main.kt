@@ -50,7 +50,7 @@ internal fun Application.main() {
                 tokenConfigModule(this@main),
                 domainModule(this@main),
                 clientModule(this@main),
-                apiModule(this@main),
+                appModule(this@main),
                 dataModule(this@main),
                 dataBaseModule(this@main)
             )
@@ -146,19 +146,6 @@ val ApplicationCall.user
     get() = authentication.principal<UserPrincipal>()
 
 class UserPrincipal(val id: Int) : Principal
-
-
-object BcryptHasher {
-
-    suspend fun checkPassword(original: String, hashed: String): Boolean = withContext(Dispatchers.Default) {
-        BCrypt.checkpw(original, hashed)
-    }
-
-    suspend fun hashPassword(password: String): String = withContext(Dispatchers.Default) {
-        BCrypt.hashpw(password, BCrypt.gensalt())
-    }
-
-}
 
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
     is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable
