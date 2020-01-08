@@ -1,8 +1,5 @@
 package ru.radiationx
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.JWTVerifier
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -32,15 +29,16 @@ import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
 import ru.radiationx.common.GMTDateSerializer
+import ru.radiationx.common.JwtConfig
 import ru.radiationx.common.LocalDateTimeAdapter
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.config.TokenConfigHolder
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.exception.*
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
 import java.time.LocalDateTime
-import java.util.*
 
 
 internal fun Application.main() {
@@ -49,6 +47,7 @@ internal fun Application.main() {
             listOf(
                 serviceConfigModule(this@main),
                 sessionizeConfigModule(this@main),
+                tokenConfigModule(this@main),
                 domainModule(this@main),
                 clientModule(this@main),
                 apiModule(this@main),
@@ -60,8 +59,11 @@ internal fun Application.main() {
 
     val serviceConfigHolder by inject<ServiceConfigHolder>()
     val sessionizeConfigHolder by inject<SessionizeConfigHolder>()
+    val tokenConfigHolder by inject<TokenConfigHolder>()
     val sessionizeRepository by inject<SessionizeRepository>()
     val batchApiModules by inject<BatchApiRouting>()
+    val userValidator by inject<UserValidator>()
+    val jwtConfig by inject<JwtConfig>()
 
     if (!serviceConfigHolder.production) {
         install(CallLogging)
@@ -113,12 +115,11 @@ internal fun Application.main() {
         listOf(HttpMethod.Put, HttpMethod.Delete, HttpMethod.Options).forEach { method(it) }
     }
 
-    val userValidator by inject<UserValidator>()
 
     install(Authentication) {
         jwt {
-            verifier(JwtConfig.verifier)
-            realm = "ktor.io"
+            verifier(jwtConfig.verifier)
+            realm = tokenConfigHolder.realm
             validate {
                 val token = userToken ?: return@validate null
                 val userId = it.payload.getClaim("userId").asInt() ?: return@validate null
@@ -156,35 +157,6 @@ object BcryptHasher {
     suspend fun hashPassword(password: String): String = withContext(Dispatchers.Default) {
         BCrypt.hashpw(password, BCrypt.gensalt())
     }
-
-}
-
-object JwtConfig {
-
-    private const val secret = "zAP5MBA4B4Ijz0MZaS48"
-    private const val issuer = "ktor.io"
-    private const val validityInMs = 36_000_00 * 10 // 10 hours
-    private val algorithm = Algorithm.HMAC512(secret)
-
-    val verifier: JWTVerifier = JWT
-        .require(algorithm)
-        .withIssuer(issuer)
-        .build()
-
-    /**
-     * Produce a token for this combination of User and Account
-     */
-    fun makeToken(user: UserPrincipal): String = JWT.create()
-        .withSubject("Authentication")
-        .withIssuer(issuer)
-        .withClaim("userId", user.id)
-        .withExpiresAt(getExpiration())
-        .sign(algorithm)
-
-    /**
-     * Calculate the expiration Date based on current time + the given validity
-     */
-    private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
 
 }
 

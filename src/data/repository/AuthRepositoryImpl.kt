@@ -2,16 +2,17 @@ package ru.radiationx.data.repository
 
 import io.ktor.auth.UserPasswordCredential
 import ru.radiationx.BcryptHasher
-import ru.radiationx.JwtConfig
 import ru.radiationx.UserPrincipal
 import ru.radiationx.data.datasource.AuthDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
 import ru.radiationx.domain.entity.User
+import ru.radiationx.domain.helper.TokenMaker
 import ru.radiationx.domain.repository.AuthRepository
 
 class AuthRepositoryImpl(
     private val authDbDataSource: AuthDbDataSource,
-    private val userDbDataSource: UserDbDataSource
+    private val userDbDataSource: UserDbDataSource,
+    private val tokenMaker: TokenMaker
 ) : AuthRepository {
 
     override suspend fun signUp(credentials: UserPasswordCredential): User {
@@ -29,7 +30,7 @@ class AuthRepositoryImpl(
         }
 
         val principal = UserPrincipal(user.id)
-        val token = JwtConfig.makeToken(principal)
+        val token = tokenMaker.makeToken(principal)
         return authDbDataSource.signIn(user.id, token, ip)
     }
 

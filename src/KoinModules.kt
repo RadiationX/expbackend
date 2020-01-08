@@ -21,6 +21,8 @@ import org.koin.experimental.builder.singleBy
 import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.api.route.*
 import ru.radiationx.common.GMTDateSerializer
+import ru.radiationx.common.JwtConfig
+import ru.radiationx.common.JwtTokenMaker
 import ru.radiationx.data.datasource.AuthDbDataSource
 import ru.radiationx.data.datasource.FavoriteDbDataSource
 import ru.radiationx.data.datasource.UserDbDataSource
@@ -32,6 +34,8 @@ import ru.radiationx.data.entity.db.VotesTable
 import ru.radiationx.data.repository.*
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.domain.helper.TokenMaker
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
 import ru.radiationx.domain.usecase.*
@@ -56,6 +60,17 @@ fun sessionizeConfigModule(application: Application) = module(createdAtStart = t
     val oldSessionizeUrl = sessionizeConfig.property("oldUrl").getString()
     val sessionizeInterval = sessionizeConfig.property("interval").getString().toLong()
     single { SessionizeConfigHolder(sessionizeUrl, oldSessionizeUrl, sessionizeInterval) }
+}
+
+fun tokenConfigModule(application: Application) = module(createdAtStart = true) {
+    val config = application.environment.config.config("jwt")
+    val issuer = config.property("issuer").getString()
+    val realm = config.property("realm").getString()
+    val secret = config.property("secret").getString()
+    val expiration = config.property("expiration").getString().toLong()
+    single { TokenConfigHolder(issuer, realm, secret, expiration) }
+    single<JwtConfig>()
+    singleBy<TokenMaker, JwtTokenMaker>()
 }
 
 fun domainModule(application: Application) = module(createdAtStart = true) {
