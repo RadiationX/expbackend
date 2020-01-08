@@ -1,5 +1,6 @@
 package ru.radiationx.domain.usecase
 
+import ru.radiationx.UserPrincipal
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
@@ -11,7 +12,7 @@ class SessionizeUseCase(
 
     suspend fun getData(old: Boolean) = sessionizeRepository.getData(old)
 
-    suspend fun update(principal: KotlinConfPrincipal?) {
+    suspend fun update(principal: UserPrincipal?) {
         userValidator.checkIsAdmin(principal)
         sessionizeRepository.update()
     }

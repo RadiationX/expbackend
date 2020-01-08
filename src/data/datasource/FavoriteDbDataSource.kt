@@ -1,12 +1,13 @@
 package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.data.asFavorite
-import ru.radiationx.data.asUser
 import ru.radiationx.data.entity.db.FavoriteRow
 import ru.radiationx.data.entity.db.FavoritesTable
+import ru.radiationx.data.entity.db.VotesTable
 import ru.radiationx.domain.entity.Favorite
 import kotlin.coroutines.CoroutineContext
 
@@ -15,10 +16,11 @@ class FavoriteDbDataSource(
     private val database: Database
 ) {
 
-    suspend fun getFavorites(uuid: String): List<Favorite> = withContext(dispatcher) {
+    suspend fun getFavorites(userId: Int): List<Favorite> = withContext(dispatcher) {
         transaction(database) {
+            val entityId = EntityID(userId, FavoritesTable)
             FavoriteRow
-                .find { FavoritesTable.uuid eq uuid }
+                .find { FavoritesTable.userId eq entityId }
                 .map { it.asFavorite() }
         }
     }
@@ -31,15 +33,16 @@ class FavoriteDbDataSource(
         }
     }
 
-    suspend fun createFavorite(uuid: String, sessionId: String): Boolean = withContext(dispatcher) {
+    suspend fun createFavorite(userId: Int, sessionId: String): Boolean = withContext(dispatcher) {
         transaction(database) {
+            val entityId = EntityID(userId, FavoritesTable)
             val count = FavoriteRow
-                .find { (FavoritesTable.uuid eq uuid) and (FavoritesTable.sessionId eq sessionId) }
+                .find { (FavoritesTable.userId eq entityId) and (FavoritesTable.sessionId eq sessionId) }
                 .count()
 
             if (count == 0) {
                 FavoritesTable.insert {
-                    it[FavoritesTable.uuid] = uuid
+                    it[FavoritesTable.userId] = entityId
                     it[FavoritesTable.sessionId] = sessionId
                 }
             }
@@ -47,11 +50,12 @@ class FavoriteDbDataSource(
         }
     }
 
-    suspend fun deleteFavorite(uuid: String, sessionId: String): Boolean = withContext(dispatcher) {
+    suspend fun deleteFavorite(userId: Int, sessionId: String): Boolean = withContext(dispatcher) {
         transaction(database) {
+            val entityId = EntityID(userId, FavoritesTable)
             FavoritesTable
                 .deleteWhere {
-                    (FavoritesTable.uuid eq uuid) and (FavoritesTable.sessionId eq sessionId)
+                    (FavoritesTable.userId eq entityId) and (FavoritesTable.sessionId eq sessionId)
                 }
             true
         }

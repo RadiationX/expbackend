@@ -6,13 +6,13 @@ import java.time.LocalDateTime
 
 interface VoteRepository {
 
-    suspend fun getVotes(uuid: String): List<Vote>
+    suspend fun getVotes(userId: Int): List<Vote>
 
     suspend fun getAllVotes(): List<Vote>
 
-    suspend fun changeVote(uuid: String, sessionId: String, rating: Rating, timestamp: LocalDateTime): Boolean
+    suspend fun changeVote(userId: Int, sessionId: String, rating: Rating, timestamp: LocalDateTime): Boolean
 
-    suspend fun deleteVote(uuid: String, sessionId: String): Boolean
+    suspend fun deleteVote(userId: Int, sessionId: String): Boolean
 
     suspend fun getVotesSummary(sessionId: String): Map<Rating, Int>
 

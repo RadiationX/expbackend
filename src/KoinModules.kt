@@ -71,6 +71,7 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun apiModule(application: Application) = module(createdAtStart = true) {
+    single<ApiAuthRoute>()
     single<ApiFavoriteRoute>()
     single<ApiFullInfoRoute>()
     single<ApiLiveVideoRoute>()

@@ -1,6 +1,7 @@
 package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.data.asUser
@@ -15,30 +16,14 @@ class UserDbDataSource(
     private val database: Database
 ) {
 
-    suspend fun getUser(uuid: String): User? = withContext(dispatcher) {
+    suspend fun getUser(userId: Int): User? = withContext(dispatcher) {
         transaction(database) {
+            val entityId = EntityID(userId, UsersTable)
             UserRow
-                .find { UsersTable.uuid eq uuid }
+                .find { UsersTable.id eq entityId }
                 .limit(1)
                 .mapLazy { it.asUser() }
                 .firstOrNull()
-        }
-    }
-
-    suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean = withContext(dispatcher) {
-        transaction(database) {
-            val count = UserRow
-                .find { UsersTable.uuid eq uuid }
-                .count()
-
-            if (count == 0) {
-                UserRow.new {
-                    this.uuid = uuid
-                    this.remote = remote
-                    this.timestamp = timestamp.toString()
-                }
-            }
-            count == 0
         }
     }
 

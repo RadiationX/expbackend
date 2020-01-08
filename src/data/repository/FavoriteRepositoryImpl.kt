@@ -8,13 +8,13 @@ class FavoriteRepositoryImpl(
     private val favoriteDbDataSource: FavoriteDbDataSource
 ) : FavoriteRepository {
 
-    override suspend fun getFavorites(uuid: String): List<Favorite> = favoriteDbDataSource.getFavorites(uuid)
+    override suspend fun getFavorites(userId: Int): List<Favorite> = favoriteDbDataSource.getFavorites(userId)
 
     override suspend fun getAllFavorites(): List<Favorite> = favoriteDbDataSource.getAllFavorites()
 
-    override suspend fun createFavorite(uuid: String, sessionId: String): Boolean =
-        favoriteDbDataSource.createFavorite(uuid, sessionId)
+    override suspend fun createFavorite(userId: Int, sessionId: String): Boolean =
+        favoriteDbDataSource.createFavorite(userId, sessionId)
 
-    override suspend fun deleteFavorite(uuid: String, sessionId: String): Boolean =
-        favoriteDbDataSource.deleteFavorite(uuid, sessionId)
+    override suspend fun deleteFavorite(userId: Int, sessionId: String): Boolean =
+        favoriteDbDataSource.deleteFavorite(userId, sessionId)
 }

@@ -4,10 +4,11 @@ import java.time.LocalDateTime
 
 data class Vote(
     val id: Int,
-    val timestamp: LocalDateTime,
     val user: User?,
     val sessionId: String,
-    val rating: Rating
+    val rating: Rating,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime?
 )
 
 data class Rating(val value: Int) {

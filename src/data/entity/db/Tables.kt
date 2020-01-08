@@ -1,52 +1,64 @@
 package ru.radiationx.data.entity.db
 
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
-import ru.radiationx.data.entity.db.UsersTable.default
-import ru.radiationx.data.entity.db.UsersTable.index
 
-internal object UsersTable : IntIdTable("users") {
-    val uuid = varchar("uuid", 50).index().default("")
-    val remote = varchar("remote", 50).default("")
-    val timestamp = varchar("timestamp", 50).default("")
+/*
+* Tables
+* */
+internal object TokensTable : BaseIntIdTable("auth_tokens") {
+    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val token = varchar("token", 255)
+    val ip = varchar("ip", 50)
+    val info = varchar("info", 255).nullable()
 }
 
-internal object FavoritesTable : IntIdTable("favorites") {
-    val uuid = reference("uuid", UsersTable.uuid, ReferenceOption.SET_NULL).nullable()
-    val sessionId = varchar("sessionId", 50)
+internal object UsersTable : BaseIntIdTable("users") {
+    val login = varchar("login", 50).uniqueIndex("login")
+    val password = varchar("password", 255)
 }
 
-internal object VotesTable : IntIdTable("votes") {
-    val uuid = reference("uuid", UsersTable.uuid, ReferenceOption.SET_NULL).nullable()
-    val timestamp = varchar("timestamp", 50)
-    val sessionId = varchar("sessionId", 50).index()
+internal object FavoritesTable : BaseIntIdTable("favorites") {
+    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val sessionId = varchar("session_id", 50)
+}
+
+internal object VotesTable : BaseIntIdTable("votes") {
+    val userId = reference("user_id", UsersTable.id, ReferenceOption.SET_NULL).nullable()
+    val sessionId = varchar("session_id", 50)
     val rating = integer("rating")
 }
 
+/*
+* Rows
+* */
+internal class TokenRow(id: EntityID<Int>) : BaseIntEntity(id, TokensTable) {
+    companion object : BaseIntEntityClass<TokenRow>(TokensTable)
 
-internal class UserRow(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<UserRow>(UsersTable)
-
-    var uuid by UsersTable.uuid
-    var remote by UsersTable.remote
-    var timestamp by UsersTable.timestamp
+    var userId by UserRow optionalReferencedOn TokensTable.userId
+    var token by TokensTable.token
+    var ip by TokensTable.ip
+    var info by TokensTable.info
 }
 
-internal class FavoriteRow(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<FavoriteRow>(FavoritesTable)
+internal class UserRow(id: EntityID<Int>) : BaseIntEntity(id, UsersTable) {
+    companion object : BaseIntEntityClass<UserRow>(UsersTable)
 
-    var user by UserRow optionalReferencedOn FavoritesTable.uuid
+    var login by UsersTable.login
+    var password by UsersTable.password
+}
+
+internal class FavoriteRow(id: EntityID<Int>) : BaseIntEntity(id, FavoritesTable) {
+    companion object : BaseIntEntityClass<FavoriteRow>(FavoritesTable)
+
+    var user by UserRow optionalReferencedOn FavoritesTable.userId
     var sessionId by FavoritesTable.sessionId
 }
 
-internal class VotesRow(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<VotesRow>(VotesTable)
+internal class VotesRow(id: EntityID<Int>) : BaseIntEntity(id, VotesTable) {
+    companion object : BaseIntEntityClass<VotesRow>(VotesTable)
 
-    var timestamp by VotesTable.timestamp
-    var uuid by UserRow optionalReferencedOn VotesTable.uuid
+    var user by UserRow optionalReferencedOn VotesTable.userId
     var sessionId by VotesTable.sessionId
     var rating by VotesTable.rating
 }

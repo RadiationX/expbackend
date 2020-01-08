@@ -1,5 +1,6 @@
 package ru.radiationx.domain.usecase
 
+import ru.radiationx.UserPrincipal
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
@@ -20,18 +21,18 @@ class VoteUseCase(
     private val sessionizeRepository: SessionizeRepository
 ) {
 
-    suspend fun getVotes(principal: KotlinConfPrincipal?): List<Vote> {
-        val uuid = userValidator.checkHasUser(principal).token
-        return voteRepository.getVotes(uuid)
+    suspend fun getVotes(principal: UserPrincipal?): List<Vote> {
+        val userId = userValidator.checkHasUser(principal).id
+        return voteRepository.getVotes(userId)
     }
 
-    suspend fun getAllVotes(principal: KotlinConfPrincipal?): List<Vote> {
+    suspend fun getAllVotes(principal: UserPrincipal?): List<Vote> {
         userValidator.checkIsAdmin(principal)
         return voteRepository.getAllVotes()
     }
 
-    suspend fun changeVote(principal: KotlinConfPrincipal?, sessionId: String?, rating: Rating?): Boolean {
-        val uuid = userValidator.checkHasUser(principal).token
+    suspend fun changeVote(principal: UserPrincipal?, sessionId: String?, rating: Rating?): Boolean {
+        val userId = userValidator.checkHasUser(principal).id
         sessionId ?: throw BadRequest()
         rating ?: throw BadRequest()
 
@@ -48,22 +49,22 @@ class VoteUseCase(
         if (!votingPeriodStarted) {
             throw ComeBackLater()
         }
-        return voteRepository.changeVote(uuid, sessionId, rating, timestamp)
+        return voteRepository.changeVote(userId, sessionId, rating, timestamp)
     }
 
-    suspend fun deleteVote(principal: KotlinConfPrincipal?, sessionId: String?): Boolean {
-        val uuid = userValidator.checkHasUser(principal).token
+    suspend fun deleteVote(principal: UserPrincipal?, sessionId: String?): Boolean {
+        val userId = userValidator.checkHasUser(principal).id
         sessionId ?: throw BadRequest()
-        return voteRepository.deleteVote(uuid, sessionId)
+        return voteRepository.deleteVote(userId, sessionId)
     }
 
-    suspend fun getVotesSummary(principal: KotlinConfPrincipal?, sessionId: String?): Map<Rating, Int> {
+    suspend fun getVotesSummary(principal: UserPrincipal?, sessionId: String?): Map<Rating, Int> {
         userValidator.checkIsAdmin(principal)
         sessionId ?: throw BadRequest()
         return voteRepository.getVotesSummary(sessionId)
     }
 
-    suspend fun setRequired(principal: KotlinConfPrincipal?, countParam: String?) {
+    suspend fun setRequired(principal: UserPrincipal?, countParam: String?) {
         userValidator.checkIsAdmin(principal)
         val count = countParam?.toIntOrNull() ?: throw BadRequest()
         voteRepository.setRequired(count)

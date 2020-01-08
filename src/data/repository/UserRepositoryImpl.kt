@@ -9,10 +9,7 @@ class UserRepositoryImpl(
     private val userDbDataSource: UserDbDataSource
 ) : UserRepository {
 
-    override suspend fun getUser(uuid: String): User? = userDbDataSource.getUser(uuid)
-
-    override suspend fun createUser(uuid: String, remote: String, timestamp: LocalDateTime): Boolean =
-        userDbDataSource.createUser(uuid, remote, timestamp)
+    override suspend fun getUser(userId: Int): User? = userDbDataSource.getUser(userId)
 
     override suspend fun getAllUsers(): List<User> = userDbDataSource.getAllUsers()
 

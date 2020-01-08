@@ -12,21 +12,25 @@ import java.time.LocalDateTime
 
 internal fun UserRow.asUser(): User = User(
     id.value,
-    uuid,
-    remote,
-    LocalDateTime.parse(timestamp)
+    login,
+    password,
+    createdAt,
+    updatedAt
 )
 
 internal fun FavoriteRow.asFavorite(): Favorite = Favorite(
     id.value,
     user?.asUser(),
-    sessionId
+    sessionId,
+    createdAt,
+    updatedAt
 )
 
 internal fun VotesRow.asVote(): Vote = Vote(
     id.value,
-    LocalDateTime.parse(timestamp),
-    uuid?.asUser(),
+    user?.asUser(),
     sessionId,
-    Rating.valueOf(rating)
+    Rating.valueOf(rating),
+    createdAt,
+    updatedAt
 )

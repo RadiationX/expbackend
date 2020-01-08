@@ -4,7 +4,8 @@ import java.time.LocalDateTime
 
 data class User(
     val id: Int,
-    val uuid: String,
-    val remote: String,
-    val timestamp: LocalDateTime
+    val login: String,
+    val password: String,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime?
 )

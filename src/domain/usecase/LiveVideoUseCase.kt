@@ -1,5 +1,6 @@
 package ru.radiationx.domain.usecase
 
+import ru.radiationx.UserPrincipal
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.entity.LiveVideo
 import ru.radiationx.domain.exception.BadRequest
@@ -13,7 +14,7 @@ class LiveVideoUseCase(
 
     suspend fun getVideo(): List<LiveVideo> = liveVideoRepository.getVideos()
 
-    suspend fun setVideo(principal: KotlinConfPrincipal?, roomIdParam: String?, videoParam: String?) {
+    suspend fun setVideo(principal: UserPrincipal?, roomIdParam: String?, videoParam: String?) {
         userValidator.checkIsAdmin(principal)
         val roomId = roomIdParam?.toIntOrNull() ?: throw BadRequest()
         liveVideoRepository.setVideo(roomId, videoParam)

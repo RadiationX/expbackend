@@ -1,6 +1,7 @@
 package ru.radiationx.domain.usecase
 
 import io.ktor.util.date.GMTDate
+import ru.radiationx.UserPrincipal
 import ru.radiationx.domain.entity.KotlinConfPrincipal
 import ru.radiationx.domain.exception.BadRequest
 import ru.radiationx.domain.helper.UserValidator
@@ -13,7 +14,7 @@ class TimeUseCase(
 
     suspend fun getTime(): GMTDate = timeRepository.getTime()
 
-    suspend fun setTime(principal: KotlinConfPrincipal?, timestamp: String?) {
+    suspend fun setTime(principal: UserPrincipal?, timestamp: String?) {
         userValidator.checkIsAdmin(principal)
         timestamp ?: throw BadRequest()
 

@@ -10,14 +10,7 @@ class UserUseCase(
     private val userRepository: UserRepository
 ) {
 
-    suspend fun getUser(uuid: String): User? = userRepository.getUser(uuid)
-
-    suspend fun createUser(uuid: String?, remote: String?): Boolean {
-        uuid ?: throw BadRequest()
-        remote ?: throw BadRequest()
-        val timestamp = LocalDateTime.now(Clock.systemUTC())
-        return userRepository.createUser(uuid, remote, timestamp)
-    }
+    suspend fun getUser(userId: Int): User? = userRepository.getUser(userId)
 
     suspend fun getAllUsers(): List<User> = userRepository.getAllUsers()
 
