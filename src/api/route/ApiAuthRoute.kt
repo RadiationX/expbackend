@@ -16,16 +16,13 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import ru.radiationx.JwtConfig
-import ru.radiationx.UserPrincipal
+import ru.radiationx.*
 import ru.radiationx.base.respondBase
 import ru.radiationx.data.asUser
 import ru.radiationx.data.entity.db.TokenRow
 import ru.radiationx.data.entity.db.TokensTable
 import ru.radiationx.data.entity.db.UserRow
 import ru.radiationx.data.entity.db.UsersTable
-import ru.radiationx.user
-import ru.radiationx.userToken
 
 class ApiAuthRoute(
     private val database: Database
@@ -35,12 +32,13 @@ class ApiAuthRoute(
 
         post("register") {
             val credentials = call.receive<UserPasswordCredential>()
-            if (credentials.name.trim().length < 2) {
-                throw Exception("So short name, bro")
+            if (!(2..50).contains(credentials.name.length)) {
+                throw Exception("Login min=2 max=50")
             }
-            if (credentials.password.length < 6) {
-                throw Exception("So short password, bro")
+            if (!(6..64).contains(credentials.password.length)) {
+                throw Exception("Password min=6 max=64")
             }
+            val hashedPassword = BcryptHasher.hashPassword(credentials.password)
             val createdUser = transaction(database) {
                 UserRow
                     .find { UsersTable.login eq credentials.name }
@@ -50,7 +48,7 @@ class ApiAuthRoute(
 
                 UserRow.new {
                     this.login = credentials.name
-                    this.password = credentials.password
+                    this.password = hashedPassword
                 }.asUser()
             }
             call.respondBase(data = createdUser)
@@ -65,12 +63,16 @@ class ApiAuthRoute(
                 val credentials = call.receive<UserPasswordCredential>()
                 val userRow = transaction(database) {
                     UserRow
-                        .find { (UsersTable.login eq credentials.name) and (UsersTable.password eq credentials.password) }
+                        .find { (UsersTable.login eq credentials.name) }
                         .firstOrNull()
                         ?: throw Exception("User not found, bruh")
                 }
 
                 val user = userRow.asUser()
+                if (!BcryptHasher.checkPassword(credentials.password, user.password)) {
+                    throw Exception("Wrong password, bruh")
+                }
+
                 val userPrincipal = UserPrincipal(user.id)
                 val token = JwtConfig.makeToken(userPrincipal)
                 transaction(database) {

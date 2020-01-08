@@ -3,7 +3,6 @@ package ru.radiationx
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.interfaces.Payload
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.jwt
@@ -15,15 +14,15 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
-import io.ktor.request.header
-import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
+import org.mindrot.jbcrypt.BCrypt
 import ru.radiationx.api.job.launchSyncJob
 import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.base.BaseError
@@ -147,6 +146,19 @@ val ApplicationCall.user
     get() = authentication.principal<UserPrincipal>()
 
 class UserPrincipal(val id: Int) : Principal
+
+
+object BcryptHasher {
+
+    suspend fun checkPassword(original: String, hashed: String): Boolean = withContext(Dispatchers.Default) {
+        BCrypt.checkpw(original, hashed)
+    }
+
+    suspend fun hashPassword(password: String): String = withContext(Dispatchers.Default) {
+        BCrypt.hashpw(password, BCrypt.gensalt())
+    }
+
+}
 
 object JwtConfig {
 
