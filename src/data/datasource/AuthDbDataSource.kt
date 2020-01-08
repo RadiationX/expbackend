@@ -11,6 +11,7 @@ import ru.radiationx.data.asUser
 import ru.radiationx.data.entity.db.TokenRow
 import ru.radiationx.data.entity.db.TokensTable
 import ru.radiationx.data.entity.db.UserRow
+import ru.radiationx.data.entity.db.UsersTable
 import ru.radiationx.domain.entity.Token
 import ru.radiationx.domain.entity.User
 import kotlin.coroutines.CoroutineContext
@@ -35,9 +36,9 @@ class AuthDbDataSource(
         ip: String
     ): String = withContext(dispatcher) {
         transaction(database) {
-            val userRow = UserRow[userId]
+            val entityId = UsersTable.getIdColumn(userId)
             TokensTable.insert {
-                it[this.userId] = userRow.id
+                it[this.userId] = entityId
                 it[this.token] = token
                 it[this.ip] = ip
             }
@@ -47,9 +48,9 @@ class AuthDbDataSource(
 
     suspend fun signOut(userId: Int, token: String) = withContext(dispatcher) {
         transaction {
-            val userRow = UserRow[userId]
+            val entityId = UsersTable.getIdColumn(userId)
             TokenRow
-                .find { (TokensTable.token eq token) and (TokensTable.userId eq userRow.id) }
+                .find { (TokensTable.token eq token) and (TokensTable.userId eq entityId) }
                 .firstOrNull()
                 ?.delete()
             Unit
@@ -58,9 +59,9 @@ class AuthDbDataSource(
 
     suspend fun getToken(userId: Int, token: String): Token? = withContext(dispatcher) {
         transaction {
-            val userRow = UserRow[userId]
+            val entityId = UsersTable.getIdColumn(userId)
             TokenRow
-                .find { (TokensTable.token eq token) and (TokensTable.userId eq userRow.id) }
+                .find { (TokensTable.token eq token) and (TokensTable.userId eq entityId) }
                 .firstOrNull()
                 ?.asToken()
         }

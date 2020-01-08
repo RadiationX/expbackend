@@ -1,7 +1,6 @@
 package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -20,7 +19,7 @@ class FavoriteDbDataSource(
 
     suspend fun getFavorites(userId: Int): List<Favorite> = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, FavoritesTable)
+            val entityId = FavoritesTable.getIdColumn(userId)
             FavoriteRow
                 .find { FavoritesTable.userId eq entityId }
                 .map { it.asFavorite() }
@@ -37,7 +36,7 @@ class FavoriteDbDataSource(
 
     suspend fun createFavorite(userId: Int, sessionId: String): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, FavoritesTable)
+            val entityId = FavoritesTable.getIdColumn(userId)
             val count = FavoriteRow
                 .find { (FavoritesTable.userId eq entityId) and (FavoritesTable.sessionId eq sessionId) }
                 .count()
@@ -54,7 +53,7 @@ class FavoriteDbDataSource(
 
     suspend fun deleteFavorite(userId: Int, sessionId: String): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, FavoritesTable)
+            val entityId = FavoritesTable.getIdColumn(userId)
             FavoritesTable
                 .deleteWhere {
                     (FavoritesTable.userId eq entityId) and (FavoritesTable.sessionId eq sessionId)

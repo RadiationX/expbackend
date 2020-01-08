@@ -5,8 +5,8 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.domain.entity.UserPrincipal
 import java.util.*
 
 class JwtConfig(

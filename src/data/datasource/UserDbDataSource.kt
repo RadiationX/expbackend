@@ -1,7 +1,6 @@
 package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.mapLazy
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -28,7 +27,7 @@ class UserDbDataSource(
 
     suspend fun getUser(userId: Int): User? = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, UsersTable)
+            val entityId = UsersTable.getIdColumn(userId)
             UserRow
                 .find { UsersTable.id eq entityId }
                 .limit(1)

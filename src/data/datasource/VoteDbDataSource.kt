@@ -1,7 +1,6 @@
 package ru.radiationx.data.datasource
 
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.data.asVote
@@ -19,7 +18,7 @@ class VoteDbDataSource(
 
     suspend fun getVotes(userId: Int): List<Vote> = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, VotesTable)
+            val entityId = VotesTable.getIdColumn(userId)
             VotesRow
                 .find { VotesTable.userId eq entityId }
                 .map { it.asVote() }
@@ -41,7 +40,7 @@ class VoteDbDataSource(
         timestamp: LocalDateTime
     ): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, VotesTable)
+            val entityId = VotesTable.getIdColumn(userId)
             val count = VotesRow
                 .find { (VotesTable.userId eq entityId) and (VotesTable.sessionId eq sessionId) }
                 .count()
@@ -64,7 +63,7 @@ class VoteDbDataSource(
 
     suspend fun deleteVote(userId: Int, sessionId: String): Boolean = withContext(dispatcher) {
         transaction(database) {
-            val entityId = EntityID(userId, VotesTable)
+            val entityId = VotesTable.getIdColumn(userId)
             VotesTable.deleteWhere { (VotesTable.userId eq entityId) and (VotesTable.sessionId eq sessionId) }
             true
         }

@@ -1,8 +1,8 @@
 package ru.radiationx.domain.repository
 
 import io.ktor.auth.UserPasswordCredential
-import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.entity.User
+import ru.radiationx.domain.entity.UserPrincipal
 
 interface AuthRepository {
 
