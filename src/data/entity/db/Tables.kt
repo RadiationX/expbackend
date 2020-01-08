@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
 import ru.radiationx.data.entity.db.UsersTable.default
 import ru.radiationx.data.entity.db.UsersTable.index
 
@@ -14,12 +15,12 @@ internal object UsersTable : IntIdTable("users") {
 }
 
 internal object FavoritesTable : IntIdTable("favorites") {
-    val uuid = reference("uuid", UsersTable.uuid)
+    val uuid = reference("uuid", UsersTable.uuid, ReferenceOption.SET_NULL).nullable()
     val sessionId = varchar("sessionId", 50)
 }
 
 internal object VotesTable : IntIdTable("votes") {
-    val uuid = reference("uuid", UsersTable.uuid)
+    val uuid = reference("uuid", UsersTable.uuid, ReferenceOption.SET_NULL).nullable()
     val timestamp = varchar("timestamp", 50)
     val sessionId = varchar("sessionId", 50).index()
     val rating = integer("rating")
@@ -37,7 +38,7 @@ internal class UserRow(id: EntityID<Int>) : IntEntity(id) {
 internal class FavoriteRow(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<FavoriteRow>(FavoritesTable)
 
-    var user by UserRow referencedOn FavoritesTable.uuid
+    var user by UserRow optionalReferencedOn FavoritesTable.uuid
     var sessionId by FavoritesTable.sessionId
 }
 
@@ -45,7 +46,7 @@ internal class VotesRow(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<VotesRow>(VotesTable)
 
     var timestamp by VotesTable.timestamp
-    var uuid by UserRow referencedOn VotesTable.uuid
+    var uuid by UserRow optionalReferencedOn VotesTable.uuid
     var sessionId by VotesTable.sessionId
     var rating by VotesTable.rating
 }

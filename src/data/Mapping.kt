@@ -19,14 +19,14 @@ internal fun UserRow.asUser(): User = User(
 
 internal fun FavoriteRow.asFavorite(): Favorite = Favorite(
     id.value,
-    user.asUser(),
+    user?.asUser(),
     sessionId
 )
 
 internal fun VotesRow.asVote(): Vote = Vote(
     id.value,
     LocalDateTime.parse(timestamp),
-    uuid.asUser(),
+    uuid?.asUser(),
     sessionId,
     Rating.valueOf(rating)
 )

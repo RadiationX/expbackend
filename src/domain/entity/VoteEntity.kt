@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 data class Vote(
     val id: Int,
     val timestamp: LocalDateTime,
-    val user: User,
+    val user: User?,
     val sessionId: String,
     val rating: Rating
 )
