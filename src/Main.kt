@@ -161,5 +161,5 @@ private fun wrapError(throwable: Throwable): BaseResponse =
 val ApplicationCall.userToken
     get() = request.parseAuthorizationHeader()?.render()?.removePrefix("Bearer ")
 
-val ApplicationCall.user
+val ApplicationCall.userPrincipal
     get() = authentication.principal<UserPrincipal>()

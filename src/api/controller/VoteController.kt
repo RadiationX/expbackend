@@ -7,7 +7,7 @@ import ru.radiationx.api.entity.VoteData
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.usecase.VoteUseCase
-import ru.radiationx.user
+import ru.radiationx.userPrincipal
 import kotlin.collections.contains
 import kotlin.collections.mapKeys
 import kotlin.collections.set
@@ -18,19 +18,19 @@ class VoteController(
 ) {
 
     suspend fun getVotes(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val votes = voteUseCase.getVotes(principal)
         call.respondBase(data = votes)
     }
 
     suspend fun getAllVotes(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val votes = voteUseCase.getAllVotes(principal)
         call.respondBase(data = votes)
     }
 
     suspend fun getVotesSummary(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val sessionId = call.parameters["sessionId"]
         val votesSummary = voteUseCase
             .getVotesSummary(principal, sessionId)
@@ -52,7 +52,7 @@ class VoteController(
     }
 
     suspend fun changeVote(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val vote = call.receive<VoteData>()
         val sessionId = vote.sessionId
         val rating = vote.rating
@@ -66,14 +66,14 @@ class VoteController(
     }
 
     suspend fun setRequired(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val count = call.parameters["count"]
         voteUseCase.setRequired(principal, count)
         call.respondBase(HttpStatusCode.OK)
     }
 
     suspend fun deleteVote(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val vote = call.receive<VoteData>()
         val sessionId = vote.sessionId
         voteUseCase.deleteVote(principal, sessionId)

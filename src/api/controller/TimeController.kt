@@ -4,7 +4,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.TimeUseCase
-import ru.radiationx.user
+import ru.radiationx.userPrincipal
 
 class TimeController(
     private val timeUseCase: TimeUseCase
@@ -15,7 +15,7 @@ class TimeController(
     }
 
     suspend fun setTime(call: ApplicationCall) {
-        val principal = call.user
+        val principal = call.userPrincipal
         val timestamp = call.parameters["timestamp"]
         timeUseCase.setTime(principal, timestamp)
         call.respondBase(HttpStatusCode.OK)
