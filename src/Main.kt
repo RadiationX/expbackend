@@ -22,8 +22,8 @@ import io.ktor.util.date.GMTDate
 import io.ktor.util.error
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import ru.radiationx.api.BatchApiRouting
 import ru.radiationx.api.job.launchSyncJob
+import ru.radiationx.api.ApiRouter
 import ru.radiationx.base.BaseError
 import ru.radiationx.base.BaseErrorContainer
 import ru.radiationx.base.BaseResponse
@@ -60,7 +60,7 @@ internal fun Application.main() {
     val sessionizeConfigHolder by inject<SessionizeConfigHolder>()
     val tokenConfigHolder by inject<TokenConfigHolder>()
     val sessionizeRepository by inject<SessionizeRepository>()
-    val batchApiModules by inject<BatchApiRouting>()
+    val apiRouter by inject<ApiRouter>()
     val userValidator by inject<UserValidator>()
     val jwtConfig by inject<JwtConfig>()
 
@@ -132,7 +132,7 @@ internal fun Application.main() {
             default("static/index.html")
             files("static")
         }
-        batchApiModules.attachRoute(this)
+        apiRouter.attachRouter(this)
     }
 
     launchSyncJob(sessionizeRepository, sessionizeConfigHolder)

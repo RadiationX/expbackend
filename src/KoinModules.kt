@@ -18,8 +18,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
-import ru.radiationx.api.BatchApiRouting
-import ru.radiationx.api.route.*
+import ru.radiationx.api.controller.*
+import ru.radiationx.api.ApiRouter
 import ru.radiationx.common.BCryptHashHelper
 import ru.radiationx.common.GMTDateSerializer
 import ru.radiationx.common.JwtConfig
@@ -78,7 +78,7 @@ fun tokenConfigModule(application: Application) = module(createdAtStart = true) 
 fun domainModule(application: Application) = module(createdAtStart = true) {
     single<UserValidator>()
 
-    single<AuthUseCase>()
+    single<AuthService>()
     single<FavoriteUseCase>()
     single<FullInfoUseCase>()
     single<LiveVideoUseCase>()
@@ -89,16 +89,16 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun appModule(application: Application) = module(createdAtStart = true) {
-    single<ApiAuthRoute>()
-    single<ApiFavoriteRoute>()
-    single<ApiFullInfoRoute>()
-    single<ApiLiveVideoRoute>()
-    single<ApiSessionizeRoute>()
-    single<ApiTimeRoute>()
-    single<ApiUsersRoute>()
-    single<ApiVoteRoute>()
+    single<AuthController>()
+    single<FavoriteController>()
+    single<FullInfoController>()
+    single<LiveVideoController>()
+    single<SessionizeController>()
+    single<TimeController>()
+    single<UsersController>()
+    single<VoteController>()
 
-    single<BatchApiRouting>()
+    single<ApiRouter>()
 
     singleBy<HashHelper, BCryptHashHelper>()
 }

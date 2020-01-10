@@ -5,7 +5,7 @@ import ru.radiationx.domain.entity.User
 import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.repository.AuthRepository
 
-class AuthUseCase(
+class AuthService(
     private val authRepository: AuthRepository
 ) {
 
