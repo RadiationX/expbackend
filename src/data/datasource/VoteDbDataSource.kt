@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.data.asVote
 import ru.radiationx.data.entity.db.VotesRow
 import ru.radiationx.data.entity.db.VotesTable
+import ru.radiationx.domain.OperationResult
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
-import java.time.LocalDateTime
 import kotlin.coroutines.CoroutineContext
 
 class VoteDbDataSource(
@@ -33,12 +33,11 @@ class VoteDbDataSource(
         }
     }
 
-    suspend fun changeVote(
+    suspend fun setVote(
         userId: Int,
         sessionId: String,
-        rating: Rating,
-        timestamp: LocalDateTime
-    ): Boolean = withContext(dispatcher) {
+        rating: Rating
+    ): OperationResult<Vote> = withContext(dispatcher) {
         transaction(database) {
             val entityId = VotesTable.getIdColumn(userId)
             val count = VotesRow
@@ -46,17 +45,20 @@ class VoteDbDataSource(
                 .count()
 
             if (count == 0) {
-                VotesTable.insert {
+                val voteId = VotesTable.insertAndGetId {
                     it[VotesTable.userId] = entityId
                     it[VotesTable.sessionId] = sessionId
                     it[VotesTable.rating] = rating.value
                 }
-                true
+                val vote = VotesRow[voteId].asVote()
+                OperationResult(vote, true)
             } else {
-                VotesTable.update({ (VotesTable.userId eq entityId) and (VotesTable.sessionId eq sessionId) }) {
-                    it[VotesTable.rating] = rating.value
-                }
-                false
+                val voteId =
+                    VotesTable.update({ (VotesTable.userId eq entityId) and (VotesTable.sessionId eq sessionId) }) {
+                        it[VotesTable.rating] = rating.value
+                    }
+                val vote = VotesRow[voteId].asVote()
+                OperationResult(vote, true)
             }
         }
     }

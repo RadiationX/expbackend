@@ -8,7 +8,7 @@ interface FavoriteRepository {
 
     suspend fun getAllFavorites(): List<Favorite>
 
-    suspend fun createFavorite(userId: Int, sessionId: String): Boolean
+    suspend fun createFavorite(userId: Int, sessionId: String): Favorite
 
-    suspend fun deleteFavorite(userId: Int, sessionId: String): Boolean
+    suspend fun deleteFavorite(userId: Int, sessionId: String)
 }

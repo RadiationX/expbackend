@@ -1,8 +1,8 @@
 package ru.radiationx.domain.repository
 
+import ru.radiationx.domain.OperationResult
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.Vote
-import java.time.LocalDateTime
 
 interface VoteRepository {
 
@@ -10,7 +10,7 @@ interface VoteRepository {
 
     suspend fun getAllVotes(): List<Vote>
 
-    suspend fun changeVote(userId: Int, sessionId: String, rating: Rating, timestamp: LocalDateTime): Boolean
+    suspend fun setVote(userId: Int, sessionId: String, rating: Rating): OperationResult<Vote>
 
     suspend fun deleteVote(userId: Int, sessionId: String): Boolean
 
@@ -18,5 +18,5 @@ interface VoteRepository {
 
     suspend fun getRequired(): Int
 
-    suspend fun setRequired(count: Int)
+    suspend fun setRequired(count: Int): OperationResult<Int>
 }

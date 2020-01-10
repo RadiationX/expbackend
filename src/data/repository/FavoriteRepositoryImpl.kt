@@ -12,9 +12,9 @@ class FavoriteRepositoryImpl(
 
     override suspend fun getAllFavorites(): List<Favorite> = favoriteDbDataSource.getAllFavorites()
 
-    override suspend fun createFavorite(userId: Int, sessionId: String): Boolean =
+    override suspend fun createFavorite(userId: Int, sessionId: String): Favorite =
         favoriteDbDataSource.createFavorite(userId, sessionId)
 
-    override suspend fun deleteFavorite(userId: Int, sessionId: String): Boolean =
+    override suspend fun deleteFavorite(userId: Int, sessionId: String) =
         favoriteDbDataSource.deleteFavorite(userId, sessionId)
 }

@@ -16,13 +16,13 @@ class FavoriteUseCase(
         return favoriteRepository.getFavorites(userId)
     }
 
-    suspend fun createFavorite(principal: UserPrincipal?, sessionId: String?): Boolean {
+    suspend fun createFavorite(principal: UserPrincipal?, sessionId: String?): Favorite {
         val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         return favoriteRepository.createFavorite(userId, sessionId)
     }
 
-    suspend fun deleteFavorite(principal: UserPrincipal?, sessionId: String?): Boolean {
+    suspend fun deleteFavorite(principal: UserPrincipal?, sessionId: String?) {
         val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         return favoriteRepository.deleteFavorite(userId, sessionId)

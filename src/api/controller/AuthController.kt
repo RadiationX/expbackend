@@ -6,6 +6,8 @@ import io.ktor.features.origin
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
+import ru.radiationx.api.entity.TokenResponse
+import ru.radiationx.api.toResponse
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.AuthService
 import ru.radiationx.userPrincipal
@@ -18,7 +20,7 @@ class AuthController(
     suspend fun signUp(call: ApplicationCall) {
         val credentials = call.receive<UserPasswordCredential>()
         val createdUser = authService.signUp(credentials)
-        call.respondBase(data = createdUser)
+        call.respondBase(createdUser.toResponse())
     }
 
     suspend fun signIn(call: ApplicationCall) {
@@ -26,14 +28,14 @@ class AuthController(
         val credentials = call.receive<UserPasswordCredential>()
         val ip = call.request.origin.remoteHost
         val token = authService.signIn(credentials, principal, ip)
-        call.respond(token)
+        call.respondBase(TokenResponse(token))
     }
 
     suspend fun signOut(call: ApplicationCall) {
         val principal = call.userPrincipal
         val token = call.userToken
         authService.signOut(principal, token)
-        call.respond(HttpStatusCode.OK)
+        call.respondBase()
     }
 
 }

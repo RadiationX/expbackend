@@ -84,7 +84,7 @@ class ApiRouter(
                 get { voteController.getVotes(call) }
                 get("all") { voteController.getAllVotes(call) }
                 get("summary/{sessionId}") { voteController.getVotesSummary(call) }
-                post { voteController.changeVote(call) }
+                post { voteController.setVote(call) }
                 post("required/{count}") { voteController.setRequired(call) }
                 delete { voteController.deleteVote(call) }
             }

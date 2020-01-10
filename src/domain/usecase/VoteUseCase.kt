@@ -1,5 +1,6 @@
 package ru.radiationx.domain.usecase
 
+import ru.radiationx.domain.OperationResult
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.entity.Vote
@@ -10,8 +11,6 @@ import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
 import ru.radiationx.domain.repository.TimeRepository
 import ru.radiationx.domain.repository.VoteRepository
-import java.time.Clock
-import java.time.LocalDateTime
 
 class VoteUseCase(
     private val userValidator: UserValidator,
@@ -30,7 +29,7 @@ class VoteUseCase(
         return voteRepository.getAllVotes()
     }
 
-    suspend fun changeVote(principal: UserPrincipal?, sessionId: String?, rating: Rating?): Boolean {
+    suspend fun setVote(principal: UserPrincipal?, sessionId: String?, rating: Rating?): OperationResult<Vote> {
         val userId = userValidator.validateUser(principal).id
         sessionId ?: throw BadRequest()
         rating ?: throw BadRequest()
@@ -40,7 +39,6 @@ class VoteUseCase(
             .sessions
             .firstOrNull { it.id == sessionId }
             ?: throw NotFound()
-        val timestamp = LocalDateTime.now(Clock.systemUTC())
 
         val nowTime = timeRepository.getTime()
         val startVotesAt = session.startsAt
@@ -48,7 +46,7 @@ class VoteUseCase(
         if (!votingPeriodStarted) {
             throw ComeBackLater()
         }
-        return voteRepository.changeVote(userId, sessionId, rating, timestamp)
+        return voteRepository.setVote(userId, sessionId, rating)
     }
 
     suspend fun deleteVote(principal: UserPrincipal?, sessionId: String?): Boolean {
@@ -63,10 +61,9 @@ class VoteUseCase(
         return voteRepository.getVotesSummary(sessionId)
     }
 
-    suspend fun setRequired(principal: UserPrincipal?, countParam: String?) {
+    suspend fun setRequired(principal: UserPrincipal?, countParam: String?): OperationResult<Int> {
         userValidator.checkIsAdmin(principal)
         val count = countParam?.toIntOrNull() ?: throw BadRequest()
-        voteRepository.setRequired(count)
-
+        return voteRepository.setRequired(count)
     }
 }

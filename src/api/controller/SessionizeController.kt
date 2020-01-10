@@ -13,6 +13,6 @@ class SessionizeController(
     suspend fun update(call: ApplicationCall) {
         val principal = call.userPrincipal
         sessionizeUseCase.update(principal)
-        call.respondBase(HttpStatusCode.OK)
+        call.respondBase(statusCode = HttpStatusCode.OK)
     }
 }

@@ -2,6 +2,7 @@ package ru.radiationx.data.repository
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.plus
+import ru.radiationx.domain.OperationResult
 import ru.radiationx.domain.repository.TimeRepository
 
 class TimeRepositoryImpl : TimeRepository {
@@ -11,9 +12,6 @@ class TimeRepositoryImpl : TimeRepository {
 
     @Volatile
     private var updatedTime: GMTDate = GMTDate()
-
-    @Volatile
-    internal var votesRequired = 10
 
     override suspend fun getTime(): GMTDate {
         val start = simulatedTime
@@ -26,8 +24,10 @@ class TimeRepositoryImpl : TimeRepository {
         }
     }
 
-    override suspend fun setTime(time: GMTDate?) {
+    override suspend fun setTime(time: GMTDate?): OperationResult<GMTDate> {
         simulatedTime = time
+        val created = simulatedTime == null
         updatedTime = GMTDate()
+        return OperationResult(simulatedTime!!, created)
     }
 }

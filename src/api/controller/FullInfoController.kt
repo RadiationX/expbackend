@@ -11,11 +11,11 @@ class FullInfoController(
 
     suspend fun getFullInfo(call: ApplicationCall) {
         val principal = call.userPrincipal
-        call.respondBase(data = fullInfoUseCase.getFullInfo(principal, true))
+        call.respondBase(fullInfoUseCase.getFullInfo(principal, true))
     }
 
     suspend fun getFullInfo2019(call: ApplicationCall) {
         val principal = call.userPrincipal
-        call.respondBase(data = fullInfoUseCase.getFullInfo(principal, false))
+        call.respondBase(fullInfoUseCase.getFullInfo(principal, false))
     }
 }

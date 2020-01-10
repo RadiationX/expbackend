@@ -2,6 +2,8 @@ package ru.radiationx.api.controller
 
 import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
+import ru.radiationx.api.entity.TimeResponse
+import ru.radiationx.api.postHttpCode
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.TimeUseCase
 import ru.radiationx.userPrincipal
@@ -11,13 +13,18 @@ class TimeController(
 ) {
 
     suspend fun getTime(call: ApplicationCall) {
-        call.respondBase(data = timeUseCase.getTime().timestamp)
+        val data = TimeResponse(timeUseCase.getTime().timestamp)
+        call.respondBase(data)
     }
 
     suspend fun setTime(call: ApplicationCall) {
         val principal = call.userPrincipal
         val timestamp = call.parameters["timestamp"]
-        timeUseCase.setTime(principal, timestamp)
-        call.respondBase(HttpStatusCode.OK)
+
+        val result = timeUseCase.setTime(principal, timestamp)
+        call.respondBase(
+            TimeResponse(result.data.timestamp),
+            result.postHttpCode()
+        )
     }
 }

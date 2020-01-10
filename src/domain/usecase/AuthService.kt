@@ -1,6 +1,7 @@
 package ru.radiationx.domain.usecase
 
 import io.ktor.auth.UserPasswordCredential
+import io.ktor.features.NotFoundException
 import ru.radiationx.domain.entity.User
 import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.repository.AuthRepository

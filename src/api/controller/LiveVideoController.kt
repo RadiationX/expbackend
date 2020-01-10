@@ -17,6 +17,6 @@ class LiveVideoController(
         val room = form["roomId"]
         val video = form["video"]
         liveVideoUseCase.setVideo(principal, room, video)
-        call.respondBase(HttpStatusCode.OK)
+        call.respondBase(statusCode = HttpStatusCode.OK)
     }
 }
