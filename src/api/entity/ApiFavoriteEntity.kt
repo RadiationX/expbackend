@@ -10,3 +10,7 @@ data class FavoriteResponse(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime?
 ) : ApiEntity
+
+data class FavoriteRequest(
+    val sessionId: String? = null
+) : ApiEntity

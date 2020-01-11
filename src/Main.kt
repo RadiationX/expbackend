@@ -18,6 +18,7 @@ import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.response.respond
 import io.ktor.routing.Routing
+import io.ktor.sessions.sessions
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
 import org.koin.ktor.ext.Koin
@@ -35,6 +36,7 @@ import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.config.TokenConfigHolder
 import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.exception.*
+import ru.radiationx.domain.exception.BadRequestException
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.SessionizeRepository
 import java.time.LocalDateTime
@@ -78,7 +80,7 @@ internal fun Application.main() {
         exception<ServiceUnavailable> { cause ->
             call.respond(withErrorCode(cause), wrapError(cause))
         }
-        exception<BadRequest> { cause ->
+        exception<BadRequestException> { cause ->
             call.respond(withErrorCode(cause), wrapError(cause))
         }
         exception<Unauthorized> { cause ->
@@ -122,6 +124,7 @@ internal fun Application.main() {
             validate {
                 val token = userToken ?: return@validate null
                 val userId = it.payload.getClaim("userId").asInt() ?: return@validate null
+                this.attributes
                 userValidator.getPrincipal(userId, token)
             }
         }
@@ -140,7 +143,7 @@ internal fun Application.main() {
 
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {
     is ServiceUnavailable -> HttpStatusCode.ServiceUnavailable
-    is BadRequest -> HttpStatusCode.BadRequest
+    is BadRequestException -> HttpStatusCode.BadRequest
     is Unauthorized -> HttpStatusCode.Unauthorized
     is NotFound -> HttpStatusCode.NotFound
     is SecretInvalidError -> HttpStatusCode.Forbidden

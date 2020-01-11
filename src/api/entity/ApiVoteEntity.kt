@@ -28,3 +28,8 @@ data class VoteSummaryResponse(
 data class VoteRequiredResponse(
     val count: Int
 ) : ApiEntity
+
+data class VoteSessionRequest(
+    val sessionId: String? = null,
+    val rating: Rating? = null
+) : ApiEntity

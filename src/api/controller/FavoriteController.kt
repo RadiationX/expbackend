@@ -3,6 +3,7 @@ package ru.radiationx.api.controller
 import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
+import ru.radiationx.api.entity.FavoriteRequest
 import ru.radiationx.api.toResponse
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.FavoriteUseCase
@@ -20,15 +21,15 @@ class FavoriteController(
 
     suspend fun createFavorite(call: ApplicationCall) {
         val principal = call.userPrincipal
-        val sessionId = call.receive<String>()
-        val favorite = favoriteUseCase.createFavorite(principal, sessionId)
+        val request = call.receive<FavoriteRequest>()
+        val favorite = favoriteUseCase.createFavorite(principal, request)
         call.respondBase(favorite.toResponse(), HttpStatusCode.Created)
     }
 
     suspend fun deleteFavorite(call: ApplicationCall) {
         val principal = call.userPrincipal
-        val sessionId = call.receive<String>()
-        favoriteUseCase.deleteFavorite(principal, sessionId)
+        val request = call.receive<FavoriteRequest>()
+        favoriteUseCase.deleteFavorite(principal, request)
         call.respondBase(statusCode = HttpStatusCode.NoContent)
     }
 }

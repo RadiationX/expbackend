@@ -2,7 +2,8 @@ package ru.radiationx.api.controller
 
 import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receiveParameters
+import io.ktor.request.receive
+import ru.radiationx.api.entity.LiveVideoRequest
 import ru.radiationx.base.respondBase
 import ru.radiationx.domain.usecase.LiveVideoUseCase
 import ru.radiationx.userPrincipal
@@ -13,10 +14,8 @@ class LiveVideoController(
 
     suspend fun setVideo(call: ApplicationCall) {
         val principal = call.userPrincipal
-        val form = call.receiveParameters()
-        val room = form["roomId"]
-        val video = form["video"]
-        liveVideoUseCase.setVideo(principal, room, video)
+        val request = call.receive<LiveVideoRequest>()
+        liveVideoUseCase.setVideo(principal, request)
         call.respondBase(statusCode = HttpStatusCode.OK)
     }
 }

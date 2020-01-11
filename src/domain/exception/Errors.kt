@@ -8,10 +8,11 @@ open class BaseException(
     val description: String? = null
 ) : Exception(title)
 
-open class AlreadyExistException(title: String = "Already exit") : Exception(title)
+class AlreadyExistException(val title: String = "Already exit") : Exception(title)
+class BadRequestException(val title: String? = null) : Exception(title)
+class ValidationException(val field: String, val title: String) : Exception(title)
 
 class ServiceUnavailable : Throwable()
-class BadRequest : Throwable()
 class Unauthorized : Throwable()
 class NotFound : Throwable()
 class SecretInvalidError : Throwable()

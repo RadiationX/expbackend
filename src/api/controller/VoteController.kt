@@ -4,6 +4,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import ru.radiationx.api.entity.VoteRequiredResponse
+import ru.radiationx.api.entity.VoteSessionRequest
 import ru.radiationx.api.entity.VoteSessionResponse
 import ru.radiationx.api.entity.VoteSummaryResponse
 import ru.radiationx.api.postHttpCode
@@ -32,8 +33,7 @@ class VoteController(
     suspend fun getVotesSummary(call: ApplicationCall) {
         val principal = call.userPrincipal
         val sessionId = call.parameters["sessionId"]
-        val votesSummary = voteUseCase
-            .getVotesSummary(principal, sessionId)
+        val votesSummary = voteUseCase.getVotesSummary(principal, sessionId)
 
         val responseData = VoteSummaryResponse(
             votesSummary[Rating.BAD] ?: 0,
@@ -45,11 +45,9 @@ class VoteController(
 
     suspend fun setVote(call: ApplicationCall) {
         val principal = call.userPrincipal
-        val vote = call.receive<VoteSessionResponse>()
-        val sessionId = vote.sessionId
-        val rating = vote.rating
+        val request = call.receive<VoteSessionRequest>()
 
-        val result = voteUseCase.setVote(principal, sessionId, rating)
+        val result = voteUseCase.setVote(principal, request)
         call.respondBase(
             result.data.toResponse(),
             result.postHttpCode()
@@ -69,9 +67,8 @@ class VoteController(
 
     suspend fun deleteVote(call: ApplicationCall) {
         val principal = call.userPrincipal
-        val vote = call.receive<VoteSessionResponse>()
-        val sessionId = vote.sessionId
-        voteUseCase.deleteVote(principal, sessionId)
+        val request = call.receive<VoteSessionRequest>()
+        voteUseCase.deleteVote(principal, request)
         call.respondBase(statusCode = HttpStatusCode.NoContent)
     }
 }

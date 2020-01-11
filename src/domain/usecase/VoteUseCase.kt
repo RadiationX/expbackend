@@ -1,10 +1,11 @@
 package ru.radiationx.domain.usecase
 
+import ru.radiationx.api.entity.VoteSessionRequest
 import ru.radiationx.domain.OperationResult
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.entity.UserPrincipal
 import ru.radiationx.domain.entity.Vote
-import ru.radiationx.domain.exception.BadRequest
+import ru.radiationx.domain.exception.BadRequestException
 import ru.radiationx.domain.exception.ComeBackLater
 import ru.radiationx.domain.exception.NotFound
 import ru.radiationx.domain.helper.UserValidator
@@ -29,10 +30,10 @@ class VoteUseCase(
         return voteRepository.getAllVotes()
     }
 
-    suspend fun setVote(principal: UserPrincipal?, sessionId: String?, rating: Rating?): OperationResult<Vote> {
+    suspend fun setVote(principal: UserPrincipal?, request: VoteSessionRequest): OperationResult<Vote> {
         val userId = userValidator.validateUser(principal).id
-        sessionId ?: throw BadRequest()
-        rating ?: throw BadRequest()
+        val sessionId = request.sessionId ?: throw BadRequestException("No sessionId")
+        val rating = request.rating ?: throw BadRequestException("No rating")
 
         val session = sessionizeRepository
             .getData(false)
@@ -49,21 +50,21 @@ class VoteUseCase(
         return voteRepository.setVote(userId, sessionId, rating)
     }
 
-    suspend fun deleteVote(principal: UserPrincipal?, sessionId: String?): Boolean {
+    suspend fun deleteVote(principal: UserPrincipal?, request: VoteSessionRequest): Boolean {
         val userId = userValidator.validateUser(principal).id
-        sessionId ?: throw BadRequest()
+        val sessionId = request.sessionId ?: throw BadRequestException("No sessionId")
         return voteRepository.deleteVote(userId, sessionId)
     }
 
     suspend fun getVotesSummary(principal: UserPrincipal?, sessionId: String?): Map<Rating, Int> {
         userValidator.checkIsAdmin(principal)
-        sessionId ?: throw BadRequest()
+        sessionId ?: throw BadRequestException()
         return voteRepository.getVotesSummary(sessionId)
     }
 
     suspend fun setRequired(principal: UserPrincipal?, countParam: String?): OperationResult<Int> {
         userValidator.checkIsAdmin(principal)
-        val count = countParam?.toIntOrNull() ?: throw BadRequest()
+        val count = countParam?.toIntOrNull() ?: throw BadRequestException()
         return voteRepository.setRequired(count)
     }
 }
