@@ -3,7 +3,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'ru.radiationx.app'
 version '0.0.1'
-mainClassName = "ru.radiationx.ServerKt"
+mainClassName = "ru.radiationx.app.ServerKt"
 
 sourceSets {
     main.kotlin.srcDirs = main.java.srcDirs = ['src']

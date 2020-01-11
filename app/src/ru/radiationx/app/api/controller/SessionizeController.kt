@@ -1,0 +1,18 @@
+package ru.radiationx.app.api.controller
+
+import io.ktor.application.ApplicationCall
+import io.ktor.http.HttpStatusCode
+import ru.radiationx.app.userPrincipal
+import ru.radiationx.app.base.respondBase
+import ru.radiationx.app.domain.usecase.SessionizeUseCase
+
+class SessionizeController(
+    private val sessionizeUseCase: SessionizeUseCase
+) {
+
+    suspend fun update(call: ApplicationCall) {
+        val principal = call.userPrincipal
+        sessionizeUseCase.update(principal)
+        call.respondBase(statusCode = HttpStatusCode.OK)
+    }
+}
