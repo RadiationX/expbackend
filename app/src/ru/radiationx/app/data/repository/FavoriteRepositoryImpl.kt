@@ -1,8 +1,8 @@
 package ru.radiationx.app.data.repository
 
 import ru.radiationx.app.data.datasource.FavoriteDbDataSource
-import ru.radiationx.app.domain.entity.Favorite
-import ru.radiationx.app.domain.repository.FavoriteRepository
+import ru.radiationx.domain.entity.Favorite
+import ru.radiationx.domain.repository.FavoriteRepository
 
 class FavoriteRepositoryImpl(
     private val favoriteDbDataSource: FavoriteDbDataSource

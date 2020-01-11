@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.app.data.asUser
 import ru.radiationx.app.data.entity.db.UserRow
 import ru.radiationx.app.data.entity.db.UsersTable
-import ru.radiationx.app.domain.entity.User
+import ru.radiationx.domain.entity.User
 import kotlin.coroutines.CoroutineContext
 
 class UserDbDataSource(

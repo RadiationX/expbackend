@@ -33,14 +33,14 @@ import ru.radiationx.app.data.entity.db.TokensTable
 import ru.radiationx.app.data.entity.db.UsersTable
 import ru.radiationx.app.data.entity.db.VotesTable
 import ru.radiationx.app.data.repository.*
-import ru.radiationx.app.domain.config.ServiceConfigHolder
-import ru.radiationx.app.domain.config.SessionizeConfigHolder
-import ru.radiationx.app.domain.config.TokenConfigHolder
-import ru.radiationx.app.domain.helper.HashHelper
-import ru.radiationx.app.domain.helper.TokenMaker
-import ru.radiationx.app.domain.helper.UserValidator
-import ru.radiationx.app.domain.repository.*
-import ru.radiationx.app.domain.usecase.*
+import ru.radiationx.domain.config.ServiceConfigHolder
+import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.domain.helper.HashHelper
+import ru.radiationx.domain.helper.TokenMaker
+import ru.radiationx.domain.helper.UserValidator
+import ru.radiationx.domain.repository.*
+import ru.radiationx.domain.usecase.*
 
 const val DB_POOL = "database-pool"
 const val SESSIONIZE_CLIENT = "sessionize-client"

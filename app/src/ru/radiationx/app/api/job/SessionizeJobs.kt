@@ -5,8 +5,8 @@ import io.ktor.application.log
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.radiationx.app.domain.config.SessionizeConfigHolder
-import ru.radiationx.app.domain.repository.SessionizeRepository
+import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.repository.SessionizeRepository
 import java.util.concurrent.TimeUnit
 
 fun Application.launchSyncJob(

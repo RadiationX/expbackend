@@ -9,8 +9,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.app.data.asFavorite
 import ru.radiationx.app.data.entity.db.FavoriteRow
 import ru.radiationx.app.data.entity.db.FavoritesTable
-import ru.radiationx.app.domain.entity.Favorite
-import ru.radiationx.app.domain.exception.AlreadyExistException
+import ru.radiationx.domain.entity.Favorite
+import ru.radiationx.domain.exception.AlreadyExistException
 import kotlin.coroutines.CoroutineContext
 
 class FavoriteDbDataSource(

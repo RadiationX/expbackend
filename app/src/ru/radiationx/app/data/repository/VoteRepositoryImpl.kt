@@ -1,10 +1,10 @@
 package ru.radiationx.app.data.repository
 
 import ru.radiationx.app.data.datasource.VoteDbDataSource
-import ru.radiationx.app.domain.OperationResult
-import ru.radiationx.app.domain.entity.Rating
-import ru.radiationx.app.domain.entity.Vote
-import ru.radiationx.app.domain.repository.VoteRepository
+import ru.radiationx.domain.OperationResult
+import ru.radiationx.domain.entity.Rating
+import ru.radiationx.domain.entity.Vote
+import ru.radiationx.domain.repository.VoteRepository
 
 class VoteRepositoryImpl(
     private val voteDbDataSource: VoteDbDataSource

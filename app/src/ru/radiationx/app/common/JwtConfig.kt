@@ -5,8 +5,9 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import ru.radiationx.app.domain.config.TokenConfigHolder
-import ru.radiationx.app.domain.entity.UserPrincipal
+import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.app.UserPrincipal
+import ru.radiationx.domain.entity.User
 import java.util.*
 
 class JwtConfig(
@@ -18,7 +19,7 @@ class JwtConfig(
         .withIssuer(configHolder.issuer)
         .build()
 
-    suspend fun makeToken(principal: UserPrincipal): String =
+    suspend fun makeToken(principal: User): String =
         withContext(Dispatchers.Default) {
             JWT.create()
                 .withSubject("Authentication")

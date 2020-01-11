@@ -2,32 +2,36 @@ package ru.radiationx.app.data.repository
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.plus
-import ru.radiationx.app.domain.OperationResult
-import ru.radiationx.app.domain.repository.TimeRepository
+import ru.radiationx.domain.OperationResult
+import ru.radiationx.domain.helper.asDate
+import ru.radiationx.domain.helper.asLocalDateTime
+import ru.radiationx.domain.repository.TimeRepository
+import java.time.LocalDateTime
+import java.util.*
 
 class TimeRepositoryImpl : TimeRepository {
 
     @Volatile
-    private var simulatedTime: GMTDate? = null
+    private var simulatedTime: LocalDateTime? = null
 
     @Volatile
-    private var updatedTime: GMTDate = GMTDate()
+    private var updatedTime: LocalDateTime = LocalDateTime.now()
 
-    override suspend fun getTime(): GMTDate {
+    override suspend fun getTime(): LocalDateTime {
         val start = simulatedTime
 
         return if (start == null) {
-            GMTDate()
+            LocalDateTime.now()
         } else {
-            val offset = GMTDate().timestamp - updatedTime.timestamp
-            start + offset
+            val offset = LocalDateTime.now().asDate().time - updatedTime.asDate().time
+            Date(start.asDate().time + offset).asLocalDateTime()
         }
     }
 
-    override suspend fun setTime(time: GMTDate?): OperationResult<GMTDate> {
+    override suspend fun setTime(time: LocalDateTime?): OperationResult<LocalDateTime> {
         simulatedTime = time
         val created = simulatedTime == null
-        updatedTime = GMTDate()
+        updatedTime = LocalDateTime.now()
         return OperationResult(simulatedTime!!, created)
     }
 }

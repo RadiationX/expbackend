@@ -3,11 +3,11 @@ package ru.radiationx.app.api.entity
 import ru.radiationx.app.api.base.ApiEntity
 import java.time.LocalDateTime
 
-data class UserCountResponse(
+data class ApiUserCountResponse(
     val count: Int
 ) : ApiEntity
 
-data class UserResponse(
+data class ApiUserResponse(
     val id: Int,
     val login: String,
     val createdAt: LocalDateTime,

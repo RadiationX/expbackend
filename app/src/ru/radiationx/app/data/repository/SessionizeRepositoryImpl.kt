@@ -2,10 +2,12 @@ package ru.radiationx.app.data.repository
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import ru.radiationx.app.domain.config.SessionizeConfigHolder
-import ru.radiationx.app.domain.entity.SessionizeData
-import ru.radiationx.app.domain.exception.ServiceUnavailable
-import ru.radiationx.app.domain.repository.SessionizeRepository
+import ru.radiationx.app.api.entity.ApiSessionizeResponse
+import ru.radiationx.app.api.toDomain
+import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.entity.SessionizeData
+import ru.radiationx.domain.exception.ServiceUnavailable
+import ru.radiationx.domain.repository.SessionizeRepository
 
 class SessionizeRepositoryImpl(
     private val sessionizeConfigHolder: SessionizeConfigHolder,
@@ -26,8 +28,8 @@ class SessionizeRepositoryImpl(
 
     override suspend fun update() {
         sessionizeConfigHolder.apply {
-            sessionizeData = sessionizeClient.get<SessionizeData>(url)
-            oldSessionizeData = sessionizeClient.get<SessionizeData>(oldUrl)
+            sessionizeData = sessionizeClient.get<ApiSessionizeResponse>(url).toDomain()
+            oldSessionizeData = sessionizeClient.get<ApiSessionizeResponse>(oldUrl).toDomain()
         }
     }
 }

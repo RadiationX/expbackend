@@ -1,7 +1,7 @@
 package ru.radiationx.app.data.repository
 
-import ru.radiationx.app.domain.entity.LiveVideo
-import ru.radiationx.app.domain.repository.LiveVideoRepository
+import ru.radiationx.domain.entity.LiveVideo
+import ru.radiationx.domain.repository.LiveVideoRepository
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.write
 

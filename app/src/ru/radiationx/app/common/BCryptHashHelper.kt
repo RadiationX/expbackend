@@ -3,7 +3,7 @@ package ru.radiationx.app.common
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.mindrot.jbcrypt.BCrypt
-import ru.radiationx.app.domain.helper.HashHelper
+import ru.radiationx.domain.helper.HashHelper
 
 class BCryptHashHelper : HashHelper {
 

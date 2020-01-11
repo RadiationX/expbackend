@@ -1,49 +1,22 @@
 package ru.radiationx.app.data.repository
 
-import io.ktor.auth.UserPasswordCredential
 import ru.radiationx.app.data.datasource.AuthDbDataSource
-import ru.radiationx.app.data.datasource.UserDbDataSource
-import ru.radiationx.app.domain.entity.User
-import ru.radiationx.app.domain.entity.UserPrincipal
-import ru.radiationx.app.domain.helper.HashHelper
-import ru.radiationx.app.domain.helper.TokenMaker
-import ru.radiationx.app.domain.repository.AuthRepository
+import ru.radiationx.domain.entity.User
+import ru.radiationx.domain.repository.AuthRepository
 
 class AuthRepositoryImpl(
-    private val authDbDataSource: AuthDbDataSource,
-    private val userDbDataSource: UserDbDataSource,
-    private val tokenMaker: TokenMaker,
-    private val hashHelper: HashHelper
+    private val authDbDataSource: AuthDbDataSource
 ) : AuthRepository {
 
-    override suspend fun signUp(credentials: UserPasswordCredential): User {
-        userDbDataSource.getUser(credentials.name)?.also { throw Exception("User already created, bro") }
-        val hashedPassword = hashHelper.hash(credentials.password)
-        val hashedCredential = credentials.copy(password = hashedPassword)
-        return authDbDataSource.signUp(hashedCredential)
-    }
+    override suspend fun signUp(login: String, password: String): User =
+        authDbDataSource.signUp(login, password)
 
-    override suspend fun signIn(credentials: UserPasswordCredential, ip: String): String {
-        val user = userDbDataSource.getUser(credentials.name) ?: throw Exception("User not found, bruh")
-
-        if (!hashHelper.check(credentials.password, user.password)) {
-            throw Exception("Wrong password, bruh")
-        }
-
-        val principal = UserPrincipal(user.id)
-        val token = tokenMaker.makeToken(principal)
-        return authDbDataSource.signIn(user.id, token, ip)
-    }
+    override suspend fun signIn(userId: Int, token: String, ip: String): String =
+        authDbDataSource.signIn(userId, token, ip)
 
     override suspend fun signOut(userId: Int, token: String) =
         authDbDataSource.signOut(userId, token)
 
-    override suspend fun getPrincipal(userId: Int, token: String): UserPrincipal? {
-        val user = authDbDataSource.getToken(userId, token)?.user
-
-        if (user == null || user.id != userId) {
-            return null
-        }
-        return UserPrincipal(user.id)
-    }
+    override suspend fun getUser(userId: Int, token: String): User? =
+        authDbDataSource.getToken(userId, token)?.user
 }

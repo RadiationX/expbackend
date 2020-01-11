@@ -4,7 +4,7 @@ import ru.radiationx.app.data.entity.db.FavoriteRow
 import ru.radiationx.app.data.entity.db.TokenRow
 import ru.radiationx.app.data.entity.db.UserRow
 import ru.radiationx.app.data.entity.db.VotesRow
-import ru.radiationx.app.domain.entity.*
+import ru.radiationx.domain.entity.*
 
 
 internal fun UserRow.asUser(): User = User(

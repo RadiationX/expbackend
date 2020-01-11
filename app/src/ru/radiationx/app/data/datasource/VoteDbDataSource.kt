@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.radiationx.app.data.asVote
 import ru.radiationx.app.data.entity.db.VotesRow
 import ru.radiationx.app.data.entity.db.VotesTable
-import ru.radiationx.app.domain.OperationResult
-import ru.radiationx.app.domain.entity.Rating
-import ru.radiationx.app.domain.entity.Vote
+import ru.radiationx.domain.OperationResult
+import ru.radiationx.domain.entity.Rating
+import ru.radiationx.domain.entity.Vote
 import kotlin.coroutines.CoroutineContext
 
 class VoteDbDataSource(

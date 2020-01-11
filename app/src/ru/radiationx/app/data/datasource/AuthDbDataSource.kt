@@ -12,8 +12,8 @@ import ru.radiationx.app.data.entity.db.TokenRow
 import ru.radiationx.app.data.entity.db.TokensTable
 import ru.radiationx.app.data.entity.db.UserRow
 import ru.radiationx.app.data.entity.db.UsersTable
-import ru.radiationx.app.domain.entity.Token
-import ru.radiationx.app.domain.entity.User
+import ru.radiationx.domain.entity.Token
+import ru.radiationx.domain.entity.User
 import kotlin.coroutines.CoroutineContext
 
 class AuthDbDataSource(
@@ -21,11 +21,11 @@ class AuthDbDataSource(
     private val database: Database
 ) {
 
-    suspend fun signUp(credentials: UserPasswordCredential): User = withContext(dispatcher) {
+    suspend fun signUp(login: String, password: String): User = withContext(dispatcher) {
         transaction(database) {
             UserRow.new {
-                this.login = credentials.name
-                this.password = credentials.password
+                this.login = login
+                this.password = login
             }.asUser()
         }
     }

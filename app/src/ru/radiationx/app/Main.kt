@@ -5,6 +5,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.Principal
 import io.ktor.auth.authentication
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.parseAuthorizationHeader
@@ -22,23 +23,21 @@ import io.ktor.util.date.GMTDate
 import io.ktor.util.error
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import ru.radiationx.app.*
 import ru.radiationx.app.api.ApiRouter
 import ru.radiationx.app.api.job.launchSyncJob
-import ru.radiationx.app.base.BaseError
 import ru.radiationx.app.base.BaseErrorContainer
-import ru.radiationx.app.base.BaseResponse
 import ru.radiationx.app.common.GMTDateSerializer
 import ru.radiationx.app.common.JwtConfig
 import ru.radiationx.app.common.LocalDateTimeAdapter
-import ru.radiationx.app.domain.config.ServiceConfigHolder
-import ru.radiationx.app.domain.config.SessionizeConfigHolder
-import ru.radiationx.app.domain.config.TokenConfigHolder
-import ru.radiationx.app.domain.entity.UserPrincipal
-import ru.radiationx.app.domain.exception.*
-import ru.radiationx.app.domain.exception.BadRequestException
-import ru.radiationx.app.domain.helper.UserValidator
-import ru.radiationx.app.domain.repository.SessionizeRepository
+import ru.radiationx.domain.config.ServiceConfigHolder
+import ru.radiationx.domain.config.SessionizeConfigHolder
+import ru.radiationx.domain.config.TokenConfigHolder
+import ru.radiationx.domain.entity.User
+import ru.radiationx.domain.exception.*
+import ru.radiationx.domain.exception.BadRequestException
+import ru.radiationx.domain.repository.AuthRepository
+import ru.radiationx.domain.repository.SessionizeRepository
+import ru.radiationx.domain.usecase.AuthService
 import java.time.LocalDateTime
 
 
@@ -63,7 +62,7 @@ internal fun Application.main() {
     val tokenConfigHolder by inject<TokenConfigHolder>()
     val sessionizeRepository by inject<SessionizeRepository>()
     val apiRouter by inject<ApiRouter>()
-    val userValidator by inject<UserValidator>()
+    val authService by inject<AuthService>()
     val jwtConfig by inject<JwtConfig>()
 
     if (!serviceConfigHolder.production) {
@@ -124,8 +123,9 @@ internal fun Application.main() {
             validate {
                 val token = userToken ?: return@validate null
                 val userId = it.payload.getClaim("userId").asInt() ?: return@validate null
-                this.attributes
-                userValidator.getPrincipal(userId, token)
+                authService.getUser(userId, token)?.let { user ->
+                    UserPrincipal(user)
+                }
             }
         }
     }
@@ -159,3 +159,7 @@ val ApplicationCall.userToken
 
 val ApplicationCall.userPrincipal
     get() = authentication.principal<UserPrincipal>()
+
+class UserPrincipal(val user: User) : Principal {
+    val id: Int = user.id
+}
