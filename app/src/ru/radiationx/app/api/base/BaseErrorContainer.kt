@@ -1,5 +1,6 @@
 package ru.radiationx.app.base
 
 class BaseErrorContainer(
-    val errors: List<BaseError>
+    val title: String,
+    val description: String? = null
 )

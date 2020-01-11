@@ -150,16 +150,9 @@ private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwabl
     else -> HttpStatusCode.InternalServerError
 }
 
-private fun wrapError(throwable: Throwable): BaseResponse =
-    BaseResponse(
-        BaseErrorContainer(
-            listOf(
-                BaseError(
-                    throwable.message ?: "No specific message for ${throwable.javaClass.simpleName}"
-                )
-            )
-        )
-    )
+private fun wrapError(throwable: Throwable): BaseErrorContainer = BaseErrorContainer(
+    throwable.message ?: "No specific message for ${throwable.javaClass.simpleName}"
+)
 
 val ApplicationCall.userToken
     get() = request.parseAuthorizationHeader()?.render()?.removePrefix("Bearer ")
