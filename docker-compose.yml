@@ -20,7 +20,7 @@ services:
 #    networks:
 #      - app-network
 #    volumes:
-#      - ./data/app:/app/ktorlog
+#      - ./docker/data/app:/app/ktorlog
 
 #  nginx:
 #    # используем последний стабильный образ nginx
@@ -32,9 +32,9 @@ services:
 #      #- 443:443
 #    # монтируем директории, слева директории на основной машине, справа - куда они монтируются в контейнере
 #    volumes:
-#      - ./services/nginx:/etc/nginx/conf.d
-#      - ./www:/var/www
-#      - ./data/nginx:/var/log/nginx
+#      - ./docker/services/nginx:/etc/nginx/conf.d
+#      - ./docker/www:/var/www
+#      - ./docker/data/nginx:/var/log/nginx
 #    depends_on:
 #      - ktor-web-app
 #    networks:
@@ -47,9 +47,9 @@ services:
     ports:
       - 3308:3306
     volumes:
-      - ./service/mariadb/my.cnf:/etc/mysql/conf.d/my1.cnf
-      - ./data/mariadb:/var/lib/mysql
-      - ./www/sql/main.sql:/docker-entrypoint-initdb.d/01-main.sql
+      - ./docker/service/mariadb/my.cnf:/etc/mysql/conf.d/my1.cnf
+      - ./docker/data/mariadb:/var/lib/mysql
+      - ./docker/www/sql/main.sql:/docker-entrypoint-initdb.d/01-main.sql
     environment:
       - MYSQL_USER=mysqlusr
       - MYSQL_PASSWORD=mysqlpwd
@@ -72,7 +72,7 @@ services:
     ports:
       - 8181:80
     volumes:
-      - ./service/phpmyadmin:/etc/phpmyadmin
+      - ./docker/service/phpmyadmin:/etc/phpmyadmin
 #    networks:
 #      - db-network
 

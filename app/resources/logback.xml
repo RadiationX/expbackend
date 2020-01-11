@@ -6,7 +6,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>ktorlog/logfile.log</file>
+        <file>appdata/ktorlog/logfile.log</file>
         <append>true</append>
         <immediateFlush>true</immediateFlush>
         <encoder>
