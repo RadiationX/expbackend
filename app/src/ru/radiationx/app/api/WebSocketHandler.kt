@@ -10,19 +10,19 @@ class WebSocketHandler {
 
     var connectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
     var disconnectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
-    var errorHandler: suspend DefaultWebSocketServerSession.(error: Throwable) -> Unit = { }
-    var textEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Text) -> Unit = { }
-    var binaryEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Binary) -> Unit = { }
-    var closeEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Close) -> Unit = { }
-    var pingEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Ping) -> Unit = { }
-    var pongEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Pong) -> Unit = { }
+    var errorHandler: suspend DefaultWebSocketServerSession.(error: Throwable) -> Unit = {}
+    var textFrameHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Text) -> Unit = {}
+    var binaryFrameHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Binary) -> Unit = {}
+    var closeFrameHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Close) -> Unit = {}
+    var pingFrameHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Ping) -> Unit = {}
+    var pongFrameHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Pong) -> Unit = {}
     var frameHandler: suspend DefaultWebSocketServerSession.(frame: Frame) -> Unit = { frame ->
         when (frame) {
-            is Frame.Text -> textEventHandler.invoke(this, frame)
-            is Frame.Binary -> binaryEventHandler.invoke(this, frame)
-            is Frame.Close -> closeEventHandler.invoke(this, frame)
-            is Frame.Ping -> pingEventHandler.invoke(this, frame)
-            is Frame.Pong -> pongEventHandler.invoke(this, frame)
+            is Frame.Text -> textFrameHandler.invoke(this, frame)
+            is Frame.Binary -> binaryFrameHandler.invoke(this, frame)
+            is Frame.Close -> closeFrameHandler.invoke(this, frame)
+            is Frame.Ping -> pingFrameHandler.invoke(this, frame)
+            is Frame.Pong -> pongFrameHandler.invoke(this, frame)
         }
     }
 

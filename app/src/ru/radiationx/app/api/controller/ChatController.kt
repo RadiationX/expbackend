@@ -7,7 +7,6 @@ import io.ktor.http.cio.websocket.readText
 import io.ktor.websocket.DefaultWebSocketServerSession
 import ru.radiationx.app.api.WebSocketHandler
 import ru.radiationx.app.api.base.ApiErrorResponse
-import ru.radiationx.app.api.base.WebSocketError
 import ru.radiationx.app.api.base.WebSocketEvent
 import ru.radiationx.app.wrapError
 import java.lang.reflect.Type
@@ -18,8 +17,8 @@ class ChatController(
 ) {
 
     init {
-        webSocketHandler.textEventHandler = { frame ->
-            val event = frame.recieve<Message>()
+        webSocketHandler.textFrameHandler = { frame ->
+            val event = frame.receive<Message>()
             respondEvent(event.event, Message("YOU SAID: ${event.data.text}"))
         }
 
@@ -53,11 +52,11 @@ class ChatController(
         outgoing.send(Frame.Text(respondText))
     }
 
-    private inline fun <reified T> Frame.Text.recieve(): WebSocketEvent<T> = recieve(genericType<T>())
+    private inline fun <reified T> Frame.Text.receive(): WebSocketEvent<T> = receive(genericType<T>())
 
     private inline fun <reified T> genericType(): Type = object : TypeToken<T>() {}.type
 
-    private fun <T> Frame.Text.recieve(type: Type): WebSocketEvent<T> {
+    private fun <T> Frame.Text.receive(type: Type): WebSocketEvent<T> {
         val rawContent = readText()
         val result = regex.find(rawContent)
         if (result == null || result.groups.size != 3) {
