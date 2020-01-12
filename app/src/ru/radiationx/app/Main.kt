@@ -6,11 +6,9 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
-import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.gson.GsonConverter
-import io.ktor.gson.gson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -21,29 +19,16 @@ import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.response.respond
-import io.ktor.routing.Route
 import io.ktor.routing.Routing
-import io.ktor.routing.routing
 import io.ktor.util.AttributeKey
-import io.ktor.util.date.GMTDate
 import io.ktor.util.error
-import io.ktor.websocket.WebSocketServerSession
 import io.ktor.websocket.WebSockets
-import io.ktor.websocket.webSocket
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.channels.ClosedSendChannelException
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onEach
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import ru.radiationx.app.api.ApiRouter
 import ru.radiationx.app.api.job.launchSyncJob
-import ru.radiationx.app.base.BaseErrorContainer
-import ru.radiationx.app.common.GMTDateSerializer
+import ru.radiationx.app.api.base.ApiErrorResponse
 import ru.radiationx.app.common.JwtConfig
-import ru.radiationx.app.common.LocalDateTimeAdapter
 import ru.radiationx.domain.config.ServiceConfigHolder
 import ru.radiationx.domain.config.SessionizeConfigHolder
 import ru.radiationx.domain.config.TokenConfigHolder
@@ -53,7 +38,6 @@ import ru.radiationx.domain.exception.BadRequestException
 import ru.radiationx.domain.repository.SessionizeRepository
 import ru.radiationx.domain.usecase.AuthService
 import java.time.Duration
-import java.time.LocalDateTime
 
 const val REST_AUTH = "rest"
 const val WS_AUTH = "ws"
@@ -199,7 +183,7 @@ private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwabl
     else -> HttpStatusCode.InternalServerError
 }
 
-private fun wrapError(throwable: Throwable): BaseErrorContainer = BaseErrorContainer(
+fun wrapError(throwable: Throwable): ApiErrorResponse = ApiErrorResponse(
     throwable.message ?: "No specific message for ${throwable.javaClass.simpleName}"
 )
 

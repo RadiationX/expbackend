@@ -7,7 +7,7 @@ import ru.radiationx.app.api.entity.ApiTimeResponse
 import ru.radiationx.app.api.postHttpCode
 import ru.radiationx.app.api.toDomain
 import ru.radiationx.app.userPrincipal
-import ru.radiationx.app.base.respondBase
+import ru.radiationx.app.api.base.respondBase
 import ru.radiationx.domain.helper.asDate
 import ru.radiationx.domain.usecase.TimeUseCase
 

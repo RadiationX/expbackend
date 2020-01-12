@@ -10,7 +10,7 @@ import ru.radiationx.app.api.postHttpCode
 import ru.radiationx.app.api.toDomain
 import ru.radiationx.app.api.toResponse
 import ru.radiationx.app.userPrincipal
-import ru.radiationx.app.base.respondBase
+import ru.radiationx.app.api.base.respondBase
 import ru.radiationx.domain.entity.Rating
 import ru.radiationx.domain.usecase.VoteUseCase
 

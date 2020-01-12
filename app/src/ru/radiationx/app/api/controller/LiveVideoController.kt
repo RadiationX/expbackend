@@ -6,7 +6,7 @@ import io.ktor.request.receive
 import ru.radiationx.app.api.entity.ApiLiveVideoRequest
 import ru.radiationx.app.api.toDomain
 import ru.radiationx.app.userPrincipal
-import ru.radiationx.app.base.respondBase
+import ru.radiationx.app.api.base.respondBase
 import ru.radiationx.domain.usecase.LiveVideoUseCase
 
 class LiveVideoController(

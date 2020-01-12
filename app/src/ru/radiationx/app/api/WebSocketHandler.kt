@@ -8,21 +8,21 @@ import kotlinx.coroutines.channels.consumeEach
 
 class WebSocketHandler {
 
-    var connectHandler: suspend (session: DefaultWebSocketServerSession) -> Unit = {}
-    var disconnectHandler: suspend (session: DefaultWebSocketServerSession) -> Unit = {}
-    var errorHandler: suspend (session: DefaultWebSocketServerSession, error: Throwable) -> Unit = { _, _ -> }
-    var textEventHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame.Text) -> Unit = { _, _ -> }
-    var binaryEventHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame.Binary) -> Unit = { _, _ -> }
-    var closeEventHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame.Close) -> Unit = { _, _ -> }
-    var pingEventHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame.Ping) -> Unit = { _, _ -> }
-    var pongEventHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame.Pong) -> Unit = { _, _ -> }
-    var frameHandler: suspend (session: DefaultWebSocketServerSession, frame: Frame) -> Unit = { session, frame ->
+    var connectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
+    var disconnectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
+    var errorHandler: suspend DefaultWebSocketServerSession.(error: Throwable) -> Unit = { }
+    var textEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Text) -> Unit = { }
+    var binaryEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Binary) -> Unit = { }
+    var closeEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Close) -> Unit = { }
+    var pingEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Ping) -> Unit = { }
+    var pongEventHandler: suspend DefaultWebSocketServerSession.(frame: Frame.Pong) -> Unit = { }
+    var frameHandler: suspend DefaultWebSocketServerSession.(frame: Frame) -> Unit = { frame ->
         when (frame) {
-            is Frame.Text -> textEventHandler.invoke(session, frame)
-            is Frame.Binary -> binaryEventHandler.invoke(session, frame)
-            is Frame.Close -> closeEventHandler.invoke(session, frame)
-            is Frame.Ping -> pingEventHandler.invoke(session, frame)
-            is Frame.Pong -> pongEventHandler.invoke(session, frame)
+            is Frame.Text -> textEventHandler.invoke(this, frame)
+            is Frame.Binary -> binaryEventHandler.invoke(this, frame)
+            is Frame.Close -> closeEventHandler.invoke(this, frame)
+            is Frame.Ping -> pingEventHandler.invoke(this, frame)
+            is Frame.Pong -> pongEventHandler.invoke(this, frame)
         }
     }
 
@@ -37,7 +37,6 @@ class WebSocketHandler {
                         is ClosedReceiveChannelException,
                         is ClosedSendChannelException -> throw error
                     }
-                    error.printStackTrace()
                     errorHandler.invoke(session, error)
                 }
             }

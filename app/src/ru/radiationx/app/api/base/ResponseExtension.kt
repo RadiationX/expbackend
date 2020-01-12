@@ -1,4 +1,4 @@
-package ru.radiationx.app.base
+package ru.radiationx.app.api.base
 
 import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpStatusCode

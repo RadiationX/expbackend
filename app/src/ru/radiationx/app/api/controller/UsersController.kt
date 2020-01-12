@@ -2,7 +2,7 @@ package ru.radiationx.app.api.controller
 
 import io.ktor.application.ApplicationCall
 import ru.radiationx.app.api.entity.ApiUserCountResponse
-import ru.radiationx.app.base.respondBase
+import ru.radiationx.app.api.base.respondBase
 import ru.radiationx.domain.usecase.UserUseCase
 
 class UsersController(

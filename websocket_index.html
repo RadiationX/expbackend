@@ -26,13 +26,13 @@
     writeToScreen("CONNECTED");
     sendText()
     setInterval(function(){
-       sendText()
+       //sendText()
     }, 5000);
   }
   var index = 0;
   function sendText(){
-   doSend(""+index);
-        doSend("WebSocket rocks "+index);
+   var data = {event:"hello", data:{text:"privet "+index}};
+        doSend(JSON.stringify(data));
         index++;
   }
 
@@ -67,6 +67,7 @@
   }
 
   window.addEventListener("load", init, false);
+
 
 
 </script>
