@@ -41,6 +41,7 @@ import ru.radiationx.domain.helper.TokenMaker
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
 import ru.radiationx.domain.usecase.*
+import java.util.concurrent.TimeUnit
 
 const val DB_POOL = "database-pool"
 const val SESSIONIZE_CLIENT = "sessionize-client"
@@ -69,8 +70,9 @@ fun tokenConfigModule(application: Application) = module(createdAtStart = true) 
     val issuer = config.property("issuer").getString()
     val realm = config.property("realm").getString()
     val secret = config.property("secret").getString()
-    val expiration = config.property("expiration").getString().toLong()
-    single { TokenConfigHolder(issuer, realm, secret, expiration) }
+    val expirationSec = config.property("expiration").getString().toLong()
+    val expirationMs = TimeUnit.SECONDS.toMillis(expirationSec)
+    single { TokenConfigHolder(issuer, realm, secret, expirationMs) }
     single<JwtConfig>()
     singleBy<TokenMaker, JwtTokenMaker>()
 }
