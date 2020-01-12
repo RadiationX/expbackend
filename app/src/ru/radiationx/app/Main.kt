@@ -1,5 +1,6 @@
 package ru.radiationx.app
 
+import com.google.gson.Gson
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -8,7 +9,9 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
+import io.ktor.gson.GsonConverter
 import io.ktor.gson.gson
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -24,10 +27,15 @@ import io.ktor.routing.routing
 import io.ktor.util.AttributeKey
 import io.ktor.util.date.GMTDate
 import io.ktor.util.error
+import io.ktor.websocket.WebSocketServerSession
 import io.ktor.websocket.WebSockets
 import io.ktor.websocket.webSocket
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ClosedSendChannelException
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import ru.radiationx.app.api.ApiRouter
@@ -73,6 +81,7 @@ internal fun Application.main() {
     val apiRouter by inject<ApiRouter>()
     val authService by inject<AuthService>()
     val jwtConfig by inject<JwtConfig>()
+    val gson by inject<Gson>()
 
     if (!serviceConfigHolder.production) {
         install(CallLogging)
@@ -110,11 +119,7 @@ internal fun Application.main() {
     }
 
     install(ContentNegotiation) {
-        gson {
-            registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
-            registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter)
-            serializeNulls()
-        }
+        register(ContentType.Application.Json, GsonConverter(gson))
     }
 
     install(CORS) {
@@ -125,13 +130,11 @@ internal fun Application.main() {
     }
 
     install(Authentication) {
-
         jwt {
             verifier(jwtConfig.verifier)
             realm = tokenConfigHolder.realm
 
             authHeader { call ->
-                HttpAuthHeader.Single("Bearer", "${call.parameters["token"]}")
                 val header = try {
                     call.request.parseAuthorizationHeader()
                 } catch (ex: IllegalArgumentException) {
@@ -148,6 +151,7 @@ internal fun Application.main() {
                 }
             }
         }
+
         jwt(WS_AUTH) {
             verifier(jwtConfig.verifier)
             realm = tokenConfigHolder.realm
@@ -172,7 +176,6 @@ internal fun Application.main() {
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(60) // Disabled (null) by default
         timeout = Duration.ofSeconds(15)
-        maxFrameSize = Long.MAX_VALUE // Disabled (max value). The connection will be closed if surpassed this length.
         masking = false
     }
 
@@ -182,48 +185,6 @@ internal fun Application.main() {
             files("static")
         }
         apiRouter.attachRouter(this)
-    }
-
-    routing {
-        authenticate(configurations = *arrayOf(WS_AUTH), optional = false) {
-
-            webSocket("/") {
-
-                // websocketSession
-                println("Connect user ${call.userPrincipal?.user}")
-                try {
-                    for (frame in incoming) {
-                        try {
-                            when (frame) {
-                                is Frame.Text -> {
-                                    val text = frame.readText()
-                                    outgoing.send(Frame.Text("YOU SAID: $text"))
-                                    if (text.equals("bye", ignoreCase = true)) {
-                                        close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
-                                    }
-                                }
-                            }
-                        } catch (e: Throwable) {
-                            if (e is ClosedReceiveChannelException || e is ClosedSendChannelException) {
-                                throw e
-                            }
-                            println("onError ${1}, ${this.outgoing.isClosedForSend}")
-                            e.printStackTrace()
-                            outgoing.send(Frame.Text(e.message.orEmpty()))
-                        }
-
-                    }
-                } catch (e: ClosedReceiveChannelException) {
-                    println("onClose receive ${closeReason.await()}")
-                } catch (e: ClosedSendChannelException) {
-                    println("onClose send ${closeReason.await()}")
-                } catch (e: Throwable) {
-                    println("unhandled onError ${closeReason.await()}")
-                    e.printStackTrace()
-                }
-            }
-
-        }
     }
 
     launchSyncJob(sessionizeRepository, sessionizeConfigHolder)

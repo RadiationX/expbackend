@@ -3,6 +3,8 @@ package ru.radiationx.app.api
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.routing.*
+import io.ktor.websocket.webSocket
+import ru.radiationx.app.WS_AUTH
 import ru.radiationx.app.api.controller.*
 
 class ApiRouter(
@@ -13,7 +15,8 @@ class ApiRouter(
     private val sessionizeController: SessionizeController,
     private val timeController: TimeController,
     private val usersController: UsersController,
-    private val voteController: VoteController
+    private val voteController: VoteController,
+    private val chatController: ChatController
 ) {
 
     fun attachRouter(routing: Routing) = routing.apply {
@@ -25,6 +28,7 @@ class ApiRouter(
         attachTime()
         attachUsers()
         attachVote()
+        attachWsChat()
     }
 
     private fun Routing.attachAuth() {
@@ -87,6 +91,14 @@ class ApiRouter(
                 post { voteController.setVote(call) }
                 post("required/{count}") { voteController.setRequired(call) }
                 delete { voteController.deleteVote(call) }
+            }
+        }
+    }
+
+    private fun Routing.attachWsChat() {
+        authenticate(configurations = *arrayOf(WS_AUTH), optional = false) {
+            webSocket("/chat") {
+                chatController.handleSession(this)
             }
         }
     }

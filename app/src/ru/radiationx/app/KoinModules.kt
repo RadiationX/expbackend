@@ -1,5 +1,7 @@
 package ru.radiationx.app
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.mysql.jdbc.Connection
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -19,11 +21,11 @@ import org.koin.dsl.module
 import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
 import ru.radiationx.app.api.ApiRouter
+import ru.radiationx.app.api.WebSocketHandler
 import ru.radiationx.app.api.controller.*
-import ru.radiationx.app.common.BCryptHashHelper
+import ru.radiationx.app.common.*
 import ru.radiationx.app.common.GMTDateSerializer
-import ru.radiationx.app.common.JwtConfig
-import ru.radiationx.app.common.JwtTokenMaker
+import ru.radiationx.app.common.LocalDateTimeAdapter
 import ru.radiationx.app.data.datasource.AuthDbDataSource
 import ru.radiationx.app.data.datasource.FavoriteDbDataSource
 import ru.radiationx.app.data.datasource.UserDbDataSource
@@ -41,6 +43,7 @@ import ru.radiationx.domain.helper.TokenMaker
 import ru.radiationx.domain.helper.UserValidator
 import ru.radiationx.domain.repository.*
 import ru.radiationx.domain.usecase.*
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 const val DB_POOL = "database-pool"
@@ -91,6 +94,17 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
 }
 
 fun appModule(application: Application) = module(createdAtStart = true) {
+
+    single<Gson> {
+        GsonBuilder().apply {
+            registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
+            registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter)
+            serializeNulls()
+        }.create()
+    }
+
+    single<WebSocketHandler>()
+
     single<AuthController>()
     single<FavoriteController>()
     single<FullInfoController>()
@@ -99,6 +113,7 @@ fun appModule(application: Application) = module(createdAtStart = true) {
     single<TimeController>()
     single<UsersController>()
     single<VoteController>()
+    single<ChatController>()
 
     single<ApiRouter>()
 
