@@ -31,8 +31,9 @@
   }
   var index = 0;
   function sendText(){
-   var data = {event:"hello", data:{text:"privet "+index}};
-        doSend(JSON.stringify(data));
+   var data = {text:"privet "+index};
+   var event = "hello";
+        doSend("###"+event+"###"+JSON.stringify(data));
         index++;
   }
 
