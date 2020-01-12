@@ -171,7 +171,7 @@ internal fun Application.main() {
         apiRouter.attachRouter(this)
     }
 
-    launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
+    //launchSyncJob(sessionizeRepository, sessionizeConfigHolder)
 }
 
 private fun withErrorCode(throwable: Throwable): HttpStatusCode = when (throwable) {

@@ -25,7 +25,7 @@ class AuthDbDataSource(
         transaction(database) {
             UserRow.new {
                 this.login = login
-                this.password = login
+                this.password = password
             }.asUser()
         }
     }

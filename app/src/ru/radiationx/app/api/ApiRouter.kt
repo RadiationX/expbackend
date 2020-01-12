@@ -2,10 +2,15 @@ package ru.radiationx.app.api
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.request.receiveParameters
+import io.ktor.request.receiveText
+import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.websocket.webSocket
 import ru.radiationx.app.WS_AUTH
 import ru.radiationx.app.api.controller.*
+import ru.radiationx.app.data.datasource.AuthDbDataSource
+import ru.radiationx.app.data.datasource.ChatDbDataSource
 
 class ApiRouter(
     private val authController: AuthController,
@@ -16,7 +21,8 @@ class ApiRouter(
     private val timeController: TimeController,
     private val usersController: UsersController,
     private val voteController: VoteController,
-    private val chatController: ChatController
+    private val chatController: ChatController,
+    private val chatDbDataSource: ChatDbDataSource
 ) {
 
     fun attachRouter(routing: Routing) = routing.apply {
@@ -29,6 +35,29 @@ class ApiRouter(
         attachUsers()
         attachVote()
         attachWsChat()
+
+        routing.apply {
+            route("test_chat") {
+                get("room_users") {
+                    val params = call.parameters
+                    call.respond(chatDbDataSource.getUsersInRoom(params["roomId"]!!.toInt()))
+                }
+                get("room") {
+                    val params = call.parameters
+                    call.respond(chatDbDataSource.getRoom(params["roomId"]!!.toInt()))
+                }
+                post("room") {
+                    val params = call.receiveParameters()
+                    chatDbDataSource.createRoom(params["name"]!!)
+                    call.respond("ok")
+                }
+                post("user_room") {
+                    val params = call.receiveParameters()
+                    chatDbDataSource.addUser(params["roomId"]!!.toInt(), params["userId"]!!.toInt())
+                    call.respond("ok")
+                }
+            }
+        }
     }
 
     private fun Routing.attachAuth() {

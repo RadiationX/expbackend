@@ -26,10 +26,9 @@ import ru.radiationx.app.api.controller.*
 import ru.radiationx.app.common.*
 import ru.radiationx.app.common.GMTDateSerializer
 import ru.radiationx.app.common.LocalDateTimeAdapter
-import ru.radiationx.app.data.datasource.AuthDbDataSource
-import ru.radiationx.app.data.datasource.FavoriteDbDataSource
-import ru.radiationx.app.data.datasource.UserDbDataSource
-import ru.radiationx.app.data.datasource.VoteDbDataSource
+import ru.radiationx.app.data.datasource.*
+import ru.radiationx.app.data.entity.db.*
+import ru.radiationx.app.data.entity.db.ChatRoomsTable
 import ru.radiationx.app.data.entity.db.FavoritesTable
 import ru.radiationx.app.data.entity.db.TokensTable
 import ru.radiationx.app.data.entity.db.UsersTable
@@ -125,6 +124,7 @@ fun dataModule(application: Application) = module(createdAtStart = true) {
     single { FavoriteDbDataSource(get(named(DB_POOL)), get()) }
     single { UserDbDataSource(get(named(DB_POOL)), get()) }
     single { VoteDbDataSource(get(named(DB_POOL)), get()) }
+    single { ChatDbDataSource(get(named(DB_POOL)), get()) }
 
     singleBy<AuthRepository, AuthRepositoryImpl>()
     singleBy<FavoriteRepository, FavoriteRepositoryImpl>()
@@ -165,7 +165,9 @@ fun dataBaseModule(application: Application) = module(createdAtStart = true) {
             TokensTable,
             UsersTable,
             FavoritesTable,
-            VotesTable
+            VotesTable,
+            ChatRoomsTable,
+            ChatRoomToUsersTable
         )
     }
 
