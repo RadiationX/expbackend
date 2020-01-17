@@ -3,13 +3,11 @@ package ru.radiationx.app.api
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.request.receiveParameters
-import io.ktor.request.receiveText
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.websocket.webSocket
 import ru.radiationx.app.WS_AUTH
 import ru.radiationx.app.api.controller.*
-import ru.radiationx.app.data.datasource.AuthDbDataSource
 import ru.radiationx.app.data.datasource.ChatDbDataSource
 
 class ApiRouter(

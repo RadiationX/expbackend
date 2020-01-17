@@ -7,7 +7,7 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.consumeEach
 
-class WebSocketHandler {
+class WebSocketHandler : WebSocketSessionHandler {
 
     var connectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
     var disconnectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
@@ -27,7 +27,7 @@ class WebSocketHandler {
         }
     }
 
-    suspend fun handleSession(session: DefaultWebSocketServerSession) = session.apply {
+    override suspend fun handleSession(session: DefaultWebSocketServerSession) = session.apply {
         try {
             connectHandler.invoke(session)
             incoming.consumeEach { frame ->
