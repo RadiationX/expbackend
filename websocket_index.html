@@ -33,7 +33,7 @@
   function sendText(){
    var data = {text:"privet "+index};
    var event = "hello";
-        doSend("###"+event+"###"+JSON.stringify(data));
+        doSend("#"+event+"#"+"#"+Date.now()+"#"+JSON.stringify(data));
         index++;
   }
 

@@ -21,8 +21,10 @@ import org.koin.dsl.module
 import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
 import ru.radiationx.app.api.ApiRouter
-import ru.radiationx.app.api.WebSocketHandler
+import ru.radiationx.app.api.websocket.WebSocketHandler
 import ru.radiationx.app.api.controller.*
+import ru.radiationx.app.api.websocket.WebSocketJsonEventConverter
+import ru.radiationx.app.api.websocket.WebSocketTextEventConverter
 import ru.radiationx.app.common.*
 import ru.radiationx.app.common.GMTDateSerializer
 import ru.radiationx.app.common.LocalDateTimeAdapter
@@ -103,6 +105,8 @@ fun appModule(application: Application) = module(createdAtStart = true) {
     }
 
     single<WebSocketHandler>()
+    single<WebSocketTextEventConverter>()
+    single<WebSocketJsonEventConverter>()
 
     single<AuthController>()
     single<FavoriteController>()

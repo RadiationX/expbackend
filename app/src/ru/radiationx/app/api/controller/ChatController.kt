@@ -1,29 +1,46 @@
 package ru.radiationx.app.api.controller
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import io.ktor.http.cio.websocket.CloseReason
 import io.ktor.http.cio.websocket.Frame
 import io.ktor.http.cio.websocket.readText
 import io.ktor.websocket.DefaultWebSocketServerSession
-import ru.radiationx.app.api.WebSocketHandler
+import ru.radiationx.app.api.websocket.WebSocketHandler
 import ru.radiationx.app.api.base.ApiErrorResponse
+import ru.radiationx.app.api.base.WebSocketConverterException
 import ru.radiationx.app.api.base.WebSocketEvent
+import ru.radiationx.app.api.websocket.WebSocketJsonEventConverter
+import ru.radiationx.app.api.websocket.WebSocketTextEventConverter
 import ru.radiationx.app.wrapError
-import java.lang.reflect.Type
 
 class ChatController(
-    private val gson: Gson,
-    private val webSocketHandler: WebSocketHandler
+    private val webSocketHandler: WebSocketHandler,
+    private val jsonEventConverter: WebSocketJsonEventConverter,
+    private val textEventConverter: WebSocketTextEventConverter
 ) {
+
+    var connectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
+    var disconnectHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
+    var errorHandler: suspend DefaultWebSocketServerSession.(uuid: String?, error: Throwable) -> Unit = { _, _ -> }
+    var textFrameHandler: suspend DefaultWebSocketServerSession.(text: String) -> Unit = {}
+    var binaryFrameHandler: suspend DefaultWebSocketServerSession.(data: ByteArray) -> Unit = {}
+    var closeFrameHandler: suspend DefaultWebSocketServerSession.(closeReason: CloseReason) -> Unit = {}
+    var pingFrameHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
+    var pongFrameHandler: suspend DefaultWebSocketServerSession.() -> Unit = {}
 
     init {
         webSocketHandler.textFrameHandler = { frame ->
-            val event = frame.receive<Message>()
-            respondEvent(event.event, Message("YOU SAID: ${event.data.text}"))
+            val event = jsonEventConverter.parseFrameText<Message>(frame.readText())
+            respondEvent(event.event, event.uuid, Message("YOU SAID: ${event.data.text}"))
         }
 
-        webSocketHandler.errorHandler = { error ->
-            respondError(wrapError(error))
+        webSocketHandler.errorHandler = { frame, error ->
+            val wrappedError = wrapError(error)
+            val uuid = if (frame is Frame.Text && error !is WebSocketConverterException) {
+                textEventConverter.parseFrameText(frame.readText()).uuid
+            } else {
+                null
+            }
+            respondError(wrappedError, uuid)
         }
     }
 
@@ -31,40 +48,25 @@ class ChatController(
 
     data class Message(val text: String)
 
-    private val regex = Regex("^###([\\s\\S]+)###([\\s\\S]*)\$")
-
-    private suspend fun DefaultWebSocketServerSession.respondEvent(event: String, data: Any? = null) {
-        respond(event, data)
+    private suspend fun DefaultWebSocketServerSession.respondEvent(
+        event: String,
+        uuid: String? = null,
+        data: Any? = null
+    ) {
+        respond(event, uuid, data)
     }
 
-    private suspend fun DefaultWebSocketServerSession.respondError(error: ApiErrorResponse) {
-        respond("error", error)
+    private suspend fun DefaultWebSocketServerSession.respondError(error: ApiErrorResponse, uuid: String? = null) {
+        respond("error", uuid, error)
     }
 
-    private suspend fun DefaultWebSocketServerSession.respond(event: String? = null, responseData: Any? = null) {
-        val jsonData = gson.toJson(responseData)
-        val respondText = buildString {
-            append("###")
-            append(event)
-            append("###")
-            append(jsonData)
-        }
+    private suspend fun DefaultWebSocketServerSession.respond(
+        event: String,
+        uuid: String? = null,
+        responseData: Any? = null
+    ) {
+        val respondText = jsonEventConverter.createFrameText(WebSocketEvent(event, uuid, responseData))
         outgoing.send(Frame.Text(respondText))
     }
 
-    private inline fun <reified T> Frame.Text.receive(): WebSocketEvent<T> = receive(genericType<T>())
-
-    private inline fun <reified T> genericType(): Type = object : TypeToken<T>() {}.type
-
-    private fun <T> Frame.Text.receive(type: Type): WebSocketEvent<T> {
-        val rawContent = readText()
-        val result = regex.find(rawContent)
-        if (result == null || result.groups.size != 3) {
-            throw Exception("Wrong format")
-        }
-        val eventPart = result.groups[1]?.value ?: throw Exception("Wrong event")
-        val jsonPart = result.groups[2]?.value ?: throw Exception("Wrong json")
-        val data = gson.fromJson<T>(jsonPart, type)
-        return WebSocketEvent(eventPart, data)
-    }
 }
