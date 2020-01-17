@@ -22,7 +22,11 @@ import org.koin.experimental.builder.single
 import org.koin.experimental.builder.singleBy
 import ru.radiationx.app.api.ApiRouter
 import ru.radiationx.app.api.controller.*
-import ru.radiationx.app.api.websocket.*
+import ru.radiationx.app.api.websocket.converter.WebSocketJsonEventConverter
+import ru.radiationx.app.api.websocket.converter.WebSocketTextEventConverter
+import ru.radiationx.app.api.websocket.handler.WebSocketHandler
+import ru.radiationx.app.api.websocket.handler.WebSocketJsonEventHandler
+import ru.radiationx.app.api.websocket.handler.WebSocketTextEventHandler
 import ru.radiationx.app.common.*
 import ru.radiationx.app.common.GMTDateSerializer
 import ru.radiationx.app.common.LocalDateTimeAdapter

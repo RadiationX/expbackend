@@ -1,11 +1,11 @@
-package ru.radiationx.app.api.websocket
+package ru.radiationx.app.api.websocket.handler
 
 import io.ktor.http.cio.websocket.Frame
-import io.ktor.http.cio.websocket.readText
 import io.ktor.websocket.DefaultWebSocketServerSession
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.consumeEach
+import ru.radiationx.app.api.websocket.WebSocketSessionHandler
 
 class WebSocketHandler : WebSocketSessionHandler {
 

@@ -1,4 +1,4 @@
-package ru.radiationx.app.api.websocket
+package ru.radiationx.app.api.websocket.converter
 
 import ru.radiationx.app.api.base.WebSocketConverterException
 import ru.radiationx.app.api.base.WebSocketTextEvent

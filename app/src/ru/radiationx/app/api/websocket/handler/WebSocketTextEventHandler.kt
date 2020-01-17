@@ -1,19 +1,16 @@
-package ru.radiationx.app.api.websocket
+package ru.radiationx.app.api.websocket.handler
 
 import io.ktor.http.cio.websocket.CloseReason
 import io.ktor.http.cio.websocket.Frame
 import io.ktor.http.cio.websocket.readReason
 import io.ktor.http.cio.websocket.readText
 import io.ktor.websocket.DefaultWebSocketServerSession
-import ru.radiationx.app.api.websocket.WebSocketHandler
-import ru.radiationx.app.api.base.ApiErrorResponse
 import ru.radiationx.app.api.base.WebSocketConverterException
-import ru.radiationx.app.api.base.WebSocketEvent
 import ru.radiationx.app.api.base.WebSocketTextEvent
-import ru.radiationx.app.api.websocket.WebSocketJsonEventConverter
-import ru.radiationx.app.api.websocket.WebSocketTextEventConverter
+import ru.radiationx.app.api.websocket.WebSocketSessionHandler
+import ru.radiationx.app.api.websocket.converter.WebSocketTextEventConverter
 
-class WebSocketTextEventHandler(
+open class WebSocketTextEventHandler(
     private val webSocketHandler: WebSocketHandler,
     private val textEventConverter: WebSocketTextEventConverter
 ) : WebSocketSessionHandler {

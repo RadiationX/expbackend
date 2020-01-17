@@ -1,4 +1,4 @@
-package ru.radiationx.app.api.websocket
+package ru.radiationx.app.api.websocket.converter
 
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
