@@ -17,6 +17,14 @@ class WebSocketJsonEventHandler(
 
     suspend fun <T> simpleRespond(
         session: DefaultWebSocketServerSession,
+        event: String,
+        data: T
+    ) {
+        respondEvent(session, WebSocketEvent(event, data))
+    }
+
+    suspend fun <T> simpleRespond(
+        session: DefaultWebSocketServerSession,
         textEvent: WebSocketTextEvent,
         data: T
     ) {

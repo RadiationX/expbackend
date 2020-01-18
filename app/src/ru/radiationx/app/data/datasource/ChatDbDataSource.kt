@@ -4,12 +4,16 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.radiationx.app.data.asMessage
+import ru.radiationx.app.data.asRoom
 import ru.radiationx.app.data.asUser
 import ru.radiationx.app.data.entity.db.*
 import ru.radiationx.app.data.entity.db.ChatRoomToUserRow
 import ru.radiationx.app.data.entity.db.ChatRoomToUsersTable
 import ru.radiationx.app.data.entity.db.ChatRoomsTable
 import ru.radiationx.app.data.entity.db.UsersTable
+import ru.radiationx.domain.entity.ChatMessage
+import ru.radiationx.domain.entity.ChatRoom
 import ru.radiationx.domain.entity.User
 import kotlin.coroutines.CoroutineContext
 
@@ -47,23 +51,24 @@ class ChatDbDataSource(
         }
     }
 
-    suspend fun getRoom(roomId: Int): Any = withContext(dispatcher) {
+    suspend fun getRoom(roomId: Int): ChatRoom = withContext(dispatcher) {
         transaction(database) {
-            val users = UsersTable.innerJoin(ChatRoomToUsersTable)
-                .slice(UsersTable.columns)
-                .select { (ChatRoomToUsersTable.roomId eq roomId) and (ChatRoomToUsersTable.userId eq UsersTable.id) }
-                .groupBy(UsersTable.id)
-            val userRows = UserRow.wrapRows(users).map { it.asUser() }
-            val room = ChatRoomRow[roomId]
-            room.asRoom(userRows)
+            ChatRoomRow[roomId].asRoom()
         }
     }
 
-    internal fun ChatRoomRow.asRoom(users: List<User>? = null): Map<String, Any?> = mapOf(
-        "id" to id.toString(),
-        "name" to id.toString(),
-        "users" to users
-    )
+    suspend fun addMessage(roomId: Int, userId: Int, text: String): ChatMessage = withContext(dispatcher) {
+        transaction(database) {
+            val entityRoomId = ChatRoomsTable.getIdColumn(roomId)
+            val entityUserId = UsersTable.getIdColumn(userId)
+            val messageId = ChatMessagesTable.insertAndGetId {
+                it[this.roomId] = entityRoomId
+                it[this.userId] = entityUserId
+                it[this.text] = text
+            }
+            ChatMessageRow[messageId].asMessage()
+        }
+    }
 
 
 }

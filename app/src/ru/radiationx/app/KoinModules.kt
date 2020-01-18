@@ -94,6 +94,7 @@ fun domainModule(application: Application) = module(createdAtStart = true) {
     single<TimeUseCase>()
     single<UserUseCase>()
     single<VoteUseCase>()
+    single<ChatService>()
 }
 
 fun appModule(application: Application) = module(createdAtStart = true) {
@@ -102,7 +103,7 @@ fun appModule(application: Application) = module(createdAtStart = true) {
         GsonBuilder().apply {
             registerTypeAdapter(GMTDate::class.java, GMTDateSerializer)
             registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter)
-            serializeNulls()
+            //serializeNulls()
         }.create()
     }
 
@@ -143,6 +144,7 @@ fun dataModule(application: Application) = module(createdAtStart = true) {
     singleBy<TimeRepository, TimeRepositoryImpl>()
     singleBy<UserRepository, UserRepositoryImpl>()
     singleBy<VoteRepository, VoteRepositoryImpl>()
+    singleBy<ChatRepository, ChatRepositoryImpl>()
 }
 
 fun clientModule(application: Application) = module(createdAtStart = true) {
@@ -175,7 +177,8 @@ fun dataBaseModule(application: Application) = module(createdAtStart = true) {
             FavoritesTable,
             VotesTable,
             ChatRoomsTable,
-            ChatRoomToUsersTable
+            ChatRoomToUsersTable,
+            ChatMessagesTable
         )
     }
 

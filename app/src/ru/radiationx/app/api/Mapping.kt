@@ -33,3 +33,23 @@ fun ApiSessionizeResponse.toDomain() = SessionizeData(
     sessions.map { it.toDomain() },
     rooms, speakers, questions, categories, partners
 )
+
+fun ChatRoom.toResponse() = ApiChatRoomResponse(id, name, createdAt, updatedAt)
+
+fun ChatMessage.toFullResponse() = ApiChatMessageResponse(
+    id,
+    user.toResponse(),
+    user.id,
+    room.toResponse(),
+    room.id,
+    text, createdAt, updatedAt
+)
+
+fun ChatMessage.toIdResponse() = ApiChatMessageResponse(
+    id,
+    null,
+    user.id,
+    null,
+    room.id,
+    text, createdAt, updatedAt
+)

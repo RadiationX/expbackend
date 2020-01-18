@@ -5,10 +5,15 @@
 
   var wsUri = "ws://localhost:4060/chat/?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imh0dHBzOi8vand0LXByb3ZpZGVyLWRvbWFpbi8iLCJleHAiOjE1ODEzOTM5ODYsInVzZXJJZCI6MX0.8GHEo0Y13zN_iziM1zV4yLcGs7Uu5dpSPHZwpyEXBcUCYusevR4LiKJcZSN5V7KxbSexKuy--NNbi6YUolcp_A";
   var output;
+  var input;
+  var sendBtn;
+  var websocket = null;
 
   function init()
   {
     output = document.getElementById("output");
+    input = document.getElementById("input");
+    sendBtn = document.getElementById("send");
     testWebSocket();
   }
 
@@ -31,8 +36,8 @@
   }
   var index = 0;
   function sendText(){
-   var data = {text:"privet "+index};
-   var event = "helloo";
+   var data = {text:"privet "+index, roomId:1};
+   var event = "sendMessage";
         doSend("#"+event+"#"+"#"+Date.now()+"#"+JSON.stringify(data));
         index++;
   }
@@ -40,11 +45,21 @@
   function onClose(evt)
   {
     writeToScreen("DISCONNECTED");
+     websocket.onopen = null;
+    websocket.onclose = null;
+    websocket.onmessage = null;
+    websocket.onerror = null;
+    websocket = null;
+    setInterval(function(){
+        if(websocket==null){
+       testWebSocket()
+        }
+    }, 5000);
   }
 
   function onMessage(evt)
   {
-    //writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
     //websocket.close();
   }
 
@@ -55,7 +70,8 @@
 
   function doSend(message)
   {
-    //writeToScreen("SENT: " + message);
+    writeToScreen("SENT: " + message);
+
     websocket.send(message);
   }
 
@@ -71,8 +87,13 @@
 
 
 
+
+
 </script>
 
 <h2>WebSocket Test</h2>
+
+<input type="text" id="input">
+<button id="send">send</button>
 
 <div id="output"></div>

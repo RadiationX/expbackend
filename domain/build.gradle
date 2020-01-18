@@ -9,3 +9,6 @@ sourceSets {
     test.resources.srcDirs = ['testresources']
 }
 
+dependencies {
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+}

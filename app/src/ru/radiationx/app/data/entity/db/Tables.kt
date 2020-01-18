@@ -89,3 +89,17 @@ internal class ChatRoomToUserRow(id: EntityID<Int>) : BaseIntEntity(id, ChatRoom
     var room by ChatRoomRow referencedOn ChatRoomToUsersTable.roomId
     var user by UserRow referencedOn ChatRoomToUsersTable.userId
 }
+
+internal object ChatMessagesTable : BaseIntIdTable("chat_messages") {
+    val roomId = reference("room_id", ChatRoomsTable)
+    val userId = reference("user_id", UsersTable)
+    val text = text("text")
+}
+
+internal class ChatMessageRow(id: EntityID<Int>) : BaseIntEntity(id, ChatMessagesTable) {
+    companion object : BaseIntEntityClass<ChatMessageRow>(ChatMessagesTable)
+
+    var room by ChatRoomRow referencedOn ChatMessagesTable.roomId
+    var user by UserRow referencedOn ChatMessagesTable.userId
+    var text by ChatMessagesTable.text
+}
