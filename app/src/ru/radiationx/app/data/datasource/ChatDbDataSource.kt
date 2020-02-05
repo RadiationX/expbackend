@@ -41,13 +41,25 @@ class ChatDbDataSource(
         }
     }
 
-    suspend fun getUsersInRoom(roomId: Int): Any = withContext(dispatcher) {
+    suspend fun getUsersInRoom(roomId: Int): List<User> = withContext(dispatcher) {
         transaction(database) {
             UsersTable.innerJoin(ChatRoomToUsersTable)
                 .slice(UsersTable.columns)
                 .select { (ChatRoomToUsersTable.roomId eq roomId) and (ChatRoomToUsersTable.userId eq UsersTable.id) }
                 .groupBy(UsersTable.id)
+                .map { UserRow.wrapRow(it).asUser() }
                 .toList()
+        }
+    }
+
+    suspend fun getUserInRoom(roomId: Int, userId: Int): User? = withContext(dispatcher) {
+        transaction(database) {
+            UsersTable.innerJoin(ChatRoomToUsersTable)
+                .slice(UsersTable.columns)
+                .select { (ChatRoomToUsersTable.roomId eq roomId) and (ChatRoomToUsersTable.userId eq userId) }
+                .groupBy(UsersTable.id)
+                .firstOrNull()
+                ?.let { UserRow.wrapRow(it).asUser() }
         }
     }
 

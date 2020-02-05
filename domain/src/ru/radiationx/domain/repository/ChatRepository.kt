@@ -6,7 +6,9 @@ import ru.radiationx.domain.entity.ChatMessageRequest
 
 interface ChatRepository {
 
-    suspend fun observeMessages(userId: Int): Flow<ChatMessage>
+    suspend fun observeMessages(token: String, userId: Int): Flow<ChatMessage>
+
+    suspend fun setObservableRooms(token: String, rooms: Set<Int>)
 
     suspend fun sendMessage(userId: Int, request: ChatMessageRequest): ChatMessage
 }

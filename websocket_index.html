@@ -6,6 +6,7 @@
   var wsUri = "ws://localhost:4060/chat/?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imh0dHBzOi8vand0LXByb3ZpZGVyLWRvbWFpbi8iLCJleHAiOjE1ODEzOTM5ODYsInVzZXJJZCI6MX0.8GHEo0Y13zN_iziM1zV4yLcGs7Uu5dpSPHZwpyEXBcUCYusevR4LiKJcZSN5V7KxbSexKuy--NNbi6YUolcp_A";
   var output;
   var input;
+  var room;
   var sendBtn;
   var websocket = null;
 
@@ -13,6 +14,7 @@
   {
     output = document.getElementById("output");
     input = document.getElementById("input");
+    room = document.getElementById("room");
     sendBtn = document.getElementById("send");
     testWebSocket();
   }
@@ -29,14 +31,15 @@
   function onOpen(evt)
   {
     writeToScreen("CONNECTED");
-    sendText()
+    //sendText()
     setInterval(function(){
        //sendText()
     }, 5000);
+    doSend("#"+"setObserveRooms"+"#"+"#"+Date.now()+"#"+JSON.stringify([1,1,1,1]));
   }
   var index = 0;
-  function sendText(){
-   var data = {text:"privet "+index, roomId:1};
+  function sendText(textArg,roomIdArg ){
+   var data = {text:textArg+index, roomId:roomIdArg};
    var event = "sendMessage";
         doSend("#"+event+"#"+"#"+Date.now()+"#"+JSON.stringify(data));
         index++;
@@ -85,6 +88,10 @@
 
   window.addEventListener("load", init, false);
 
+function clickSend(){
+sendText(input.value, room.value);
+}
+
 
 
 
@@ -93,7 +100,8 @@
 
 <h2>WebSocket Test</h2>
 
-<input type="text" id="input">
-<button id="send">send</button>
+<input type="text" id="input" value="hello world">
+<input type="text" id="room" value="1">
+<button id="send" onclick="clickSend()">send</button>
 
 <div id="output"></div>

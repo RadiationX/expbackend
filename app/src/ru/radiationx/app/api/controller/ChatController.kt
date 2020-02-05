@@ -14,6 +14,7 @@ import ru.radiationx.app.api.websocket.converter.WebSocketJsonEventConverter
 import ru.radiationx.app.api.websocket.handler.WebSocketJsonEventHandler
 import ru.radiationx.app.api.websocket.WebSocketSessionHandler
 import ru.radiationx.app.userPrincipal
+import ru.radiationx.app.userToken
 import ru.radiationx.app.wrapError
 import ru.radiationx.domain.entity.ChatMessage
 import ru.radiationx.domain.entity.ChatMessageRequest
@@ -30,6 +31,7 @@ class ChatController(
 
     companion object {
         private const val EVENT_SEND_MESSAGE = "sendMessage"
+        private const val EVENT_SET_OBSERVE_ROOMS = "setObserveRooms"
         private const val EVENT_OBSERVE_MESSAGE = "observeMessages"
     }
 
@@ -62,13 +64,14 @@ class ChatController(
     private suspend fun DefaultWebSocketServerSession.attachRoute(textEvent: WebSocketTextEvent) {
         when (textEvent.event) {
             EVENT_SEND_MESSAGE -> sendMessageRoute(textEvent)
+            EVENT_SET_OBSERVE_ROOMS -> setObserveRooms(textEvent)
             else -> throw NotFound()
         }
     }
 
     private suspend fun DefaultWebSocketServerSession.observeMessages() {
         chatService
-            .observeMessages(call.userPrincipal?.user)
+            .observeMessages(call.userToken, call.userPrincipal?.user)
             .drop(1)
             .onEach {
                 simpleRespond(EVENT_OBSERVE_MESSAGE, it.toIdResponse())
@@ -80,6 +83,13 @@ class ChatController(
         val event = jsonEventConverter.parseFrameText<ChatMessageRequest>(textEvent)
         val message = chatService.sendMessage(call.userPrincipal?.user, event.data).toIdResponse()
         simpleRespond(textEvent, message)
+    }
+
+    private suspend fun DefaultWebSocketServerSession.setObserveRooms(textEvent: WebSocketTextEvent) {
+        val event = jsonEventConverter.parseFrameText<List<Int>>(textEvent)
+        val roomsSet = event.data.toSet()
+        chatService.setObservableRooms(call.userToken, event.data.toSet())
+        simpleRespond(textEvent, roomsSet)
     }
 
     private suspend fun <T> DefaultWebSocketServerSession.simpleRespond(event: String, data: T) {
